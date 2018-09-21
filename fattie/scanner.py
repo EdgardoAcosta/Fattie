@@ -52,6 +52,7 @@ tokens = [
              'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT', 'ARROW'
          ] + list(reserved.values())
 
+t_EQUAL = r'\='
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
 t_COMMA = r'\,'
