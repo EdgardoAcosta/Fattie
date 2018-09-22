@@ -9,17 +9,17 @@ def p_program(p):
 
 
 def p_program_vars(p):
-    '''program_vars : variable
+    '''program_vars : variable NEW_LINE
                     | empty'''
 
 
 def p_program_functions(p):
-    '''program_functions : function
+    '''program_functions : function program_functions NEW_LINE
                          | empty'''
 
 
 def p_main(p):
-    '''main : MAIN ARROW sub_main'''
+    '''main : MAIN ARROW NEW_LINE sub_main'''
 
 
 def p_sub_main(p):
@@ -54,11 +54,11 @@ def p_sub_block(p):
 
 
 def p_statement(p):
-    '''statement : while
-                 | for
-                 | assignation
+    '''statement : while 
+                 | for 
+                 | assignation NEW_LINE
                  | if
-                 | special_fun'''
+                 | special_fun NEW_LINE'''
 
 
 def p_while(p):
@@ -112,7 +112,8 @@ def p_term(p):
 
 
 def p_operator(p):
-    '''operator : sign exp '''
+    '''operator : sign term operator
+     | empty'''
 
 
 def p_factor(p):
@@ -121,13 +122,13 @@ def p_factor(p):
 
 
 def p_term_factor(p):
-    '''term_factor : TIMES term
-                   | DIVIDE term
+    '''term_factor : TIMES factor term_factor
+                   | DIVIDE  factor term_factor
                    | empty'''
 
 
 def p_variable(p):
-    '''variable : VAR type ID sub_variable SEMICOLON'''
+    '''variable : VAR type ID sub_variable SEMICOLON NEW_LINE'''
 
 
 def p_sub_variable(p):
@@ -287,10 +288,9 @@ def p_sub_var_cte(p):
 
 
 def p_type(p):
-    '''type :  INT
-            | BOOLEAN
-            | FLOAT
-            | CHAR'''
+    '''type :  CTEI
+            | CTEF
+            | CTEC'''
 
 
 def p_empty(p):
@@ -307,19 +307,19 @@ def p_error(p):
 
 yacc.yacc()
 
-# if __name__ == '__main__':
-#     fattie = yacc.yacc()
+if __name__ == '__main__':
+    ##     fattie = yacc.yacc()
 
-#     file = '../test/test.txt'
-#     # if len(sys.argv) > 1:
-#     #     file = sys.argv[1]
-#     try:
-#         f = open(file, 'r')
-#         data = f.read()
-#         f.close()
-#         if yacc.parse(data) == "COMPILED":
-#             print("Valid input")
-#     except EOFError:
-#         print(EOFError)
-# # else:
-# #     print("No file to test found")
+    # file = '../test/test.txt'
+    if len(sys.argv) > 1:
+        file = sys.argv[1]
+        try:
+            f = open(file, 'r')
+            data = f.read()
+            f.close()
+            if yacc.parse(data) == "COMPILED":
+                print("Valid input")
+        except EOFError:
+            print(EOFError)
+    else:
+        print("No file to test found")

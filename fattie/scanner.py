@@ -76,7 +76,8 @@ def t_ignore_SINGLE_COMMENT(t):
 
 
 def t_ID(t):
-    r'[A-za-z]([A-za-z] | [0-9])'
+    r'[A-Za-z]([A-Za-z] | [0-9])*'
+    print(t.value)
     t.type = reserved.get(t.value, 'ID')
     return t
 
@@ -84,13 +85,14 @@ def t_ID(t):
 # Define a float number
 def t_CTEF(t):
     r'[0-9]*\.[0-9]+|[0-9]+'
+    print(t.value)
     t.value = float(t.value)
     return t
 
 
 # Define a variable int
 def t_CTEI(t):
-    r'\d+'
+    r'[0-9]+'
     t.value = int(t.value)
     return t
 
@@ -99,14 +101,16 @@ def t_CTEI(t):
 # Define a variable Chart
 def t_CTEC(t):
     r'.+'
-    t.value = str(t.value)
+    t.value = t.value[1:-1]
     return t
 
 
 # Define a new line or multiple new lines
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+def t_NEW_LINE(t):
+    r'\n\s*[\t]*'
+    t.lexer.lineno += t.value.count('\n')
+    t.value = len(t.value) - 1 - t.value.rfind('\n')
+    return t
 
 
 def first_word(s):
