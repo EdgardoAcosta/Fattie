@@ -1,17 +1,25 @@
-import ply.yacc as yacc
 import sys
-from fattie.scanner import tokens
+import ply.yacc as yacc
+from scanner import tokens
 
 
 def p_program(p):
-    '''program : variable function main
-                | main'''
+    '''program : program_vars program_functions main '''
     p[0] = "COMPILED"
 
 
+def p_program_vars(p):
+    '''program_vars : variable
+                    | empty'''
+
+
+def p_program_functions(p):
+    '''program_functions : function
+                         | empty'''
+
+
 def p_main(p):
-    '''main : MAIN ARROW
-            | MAIN ARROW sub_main'''
+    '''main : MAIN ARROW sub_main'''
 
 
 def p_sub_main(p):
@@ -21,7 +29,8 @@ def p_sub_main(p):
 
 def p_function_call(p):
     '''function_call : ID EQUAL sub_function_call
-                    | sub_function_call'''
+                    | sub_function_call
+                    | empty'''
 
 
 def p_sub_function_call(p):
@@ -87,10 +96,15 @@ def p_exp(p):
 
 
 def p_comparation(p):
-    '''comparation : EQUAL
-                   | LESS
-                   | GREATER
-                   | NOTEQUAL'''
+    '''comparation : EQUALS comparation_exp
+                   | LESS comparation_exp
+                   | GREATER comparation_exp
+                   | NOTEQUAL comparation_exp
+                   | empty'''
+
+
+def p_comparation_exp(p):
+    '''comparation_exp : exp'''
 
 
 def p_term(p):
@@ -102,8 +116,8 @@ def p_operator(p):
 
 
 def p_factor(p):
-    '''factor :  sing OPEN_PAREN expression CLOSE_PAREN
-              | sing sing var_cte'''
+    '''factor :  sign OPEN_PAREN expression CLOSE_PAREN
+              | sign sign var_cte'''
 
 
 def p_term_factor(p):
@@ -161,7 +175,8 @@ def p_special_fun(p):
                    | go
                    | fibonacci
                    | factorial
-                   | sleep'''
+                   | sleep
+                   | empty'''
 
 
 def p_input(p):  # TODO : Check the value inside input
@@ -262,7 +277,7 @@ def p_var_cte(p):
     '''var_cte : ID sub_var_cte
                | CTEI
                | CTEF
-               | CTES'''
+               | CTEC'''
 
 
 def p_sub_var_cte(p):
@@ -283,17 +298,28 @@ def p_empty(p):
     pass
 
 
-if __name__ == '__main__':
-
-    if len(sys.argv) > 1:
-        file = sys.argv[1]
-        try:
-            f = open(file, 'r')
-            data = f.read()
-            f.close()
-            if yacc.parse(data) == "COMPILED":
-                print("Valid input")
-        except EOFError:
-            print(EOFError)
+def p_error(p):
+    if p is None:
+        print("Unexpected EOF")
     else:
-        print("No file to test found")
+        print("Unexpected {} at line {}".format(p.type, p.lexer.lineno))
+
+
+yacc.yacc()
+
+# if __name__ == '__main__':
+#     fattie = yacc.yacc()
+
+#     file = '../test/test.txt'
+#     # if len(sys.argv) > 1:
+#     #     file = sys.argv[1]
+#     try:
+#         f = open(file, 'r')
+#         data = f.read()
+#         f.close()
+#         if yacc.parse(data) == "COMPILED":
+#             print("Valid input")
+#     except EOFError:
+#         print(EOFError)
+# # else:
+# #     print("No file to test found")

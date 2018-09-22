@@ -1,8 +1,10 @@
 import ply.lex as lex
-from fattie.core.indents import Indents
+from core.indents import Indents
 
 # Reserved words
 reserved = {
+    "main": "MAIN",
+    "to": "TO",
     "_input": "INPUT",
     "_print": "PRINT",
     "_moveUp": "MOVEUP",
@@ -48,8 +50,9 @@ reserved = {
 
 # Token declaration
 tokens = [
-             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET', 'CLOSE_BRACKET',
-             'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT', 'ARROW'
+             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'SEMICOLON', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
+             'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
+             'ARROW'
          ] + list(reserved.values())
 
 t_EQUAL = r'\='
@@ -89,6 +92,14 @@ def t_CTEF(t):
 def t_CTEI(t):
     r'\d+'
     t.value = int(t.value)
+    return t
+
+
+# Todo: Check rexe for char
+# Define a variable Chart
+def t_CTEC(t):
+    r'.+'
+    t.value = str(t.value)
     return t
 
 
