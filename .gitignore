@@ -2,7 +2,6 @@
 
 # IntelliJ project files
 .idea/*
-*.iml
 out
 
 Phyton
@@ -20,5 +19,7 @@ ENV/
 env.bak/
 
 # Test files
-test/*
+fattie/test/*
 
+fattie/__pycache__/
+fattie/core/__pycache__/

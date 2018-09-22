@@ -4,8 +4,13 @@ from scanner import tokens
 
 
 def p_program(p):
-    '''program : program_vars program_functions main '''
+    '''program : empty_spaces program_vars program_functions main '''
     p[0] = "COMPILED"
+
+
+def p_empty_spaces(p):
+    ''' empty_spaces : NEW_LINE  empty_spaces
+                    | empty'''
 
 
 def p_program_vars(p):
@@ -19,11 +24,11 @@ def p_program_functions(p):
 
 
 def p_main(p):
-    '''main : MAIN ARROW NEW_LINE sub_main'''
+    '''main : MAIN ARROW sub_main'''
 
 
 def p_sub_main(p):
-    '''sub_main : function_call block sub_main
+    '''sub_main : NEW_LINE function_call block sub_main
                 | empty'''
 
 
@@ -62,7 +67,7 @@ def p_statement(p):
 
 
 def p_while(p):
-    '''while : WHILE expression ARROW block'''
+    '''while : WHILE expression ARROW NEW_LINE block'''
 
 
 def p_for(p):
@@ -79,11 +84,11 @@ def p_array_assignation(p):
 
 
 def p_if(p):
-    '''if : IF expression ARROW block else'''
+    '''if : IF expression ARROW NEW_LINE block else'''
 
 
 def p_else(p):
-    '''else :  ELSE  block
+    '''else :  ELSE  NEW_LINE  block
             | empty'''
 
 
@@ -128,17 +133,17 @@ def p_term_factor(p):
 
 
 def p_variable(p):
-    '''variable : VAR type ID sub_variable SEMICOLON NEW_LINE'''
+    '''variable : VAR type COLON ID sub_variable SEMICOLON'''
 
 
 def p_sub_variable(p):
-    '''sub_variable : COMMA variable
-                    | OPEN_BRACKET CTEI CLOSE_BRACKET
+    '''sub_variable : COMMA ID sub_variable
+                    | OPEN_BRACKET CTEI CLOSE_BRACKET sub_variable
                     | empty'''
 
 
 def p_function(p):
-    '''function : FUN ID OPEN_PAREN  function_variables  CLOSE_PAREN function_return_type ARROW block'''
+    '''function : FUN ID OPEN_PAREN  function_variables  CLOSE_PAREN function_return_type ARROW  NEW_LINE block'''
 
 
 def p_function_variables(p):
@@ -288,9 +293,11 @@ def p_sub_var_cte(p):
 
 
 def p_type(p):
-    '''type :  CTEI
-            | CTEF
-            | CTEC'''
+    '''type :  INT
+            | FLOAT
+            | CHAR
+            | BOOLEAN'''
+    pass
 
 
 def p_empty(p):
@@ -302,15 +309,14 @@ def p_error(p):
     if p is None:
         print("Unexpected EOF")
     else:
-        print("Unexpected {} at line {}".format(p.type, p.lexer.lineno))
+        print(p.type)
+        print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
 yacc.yacc()
 
 if __name__ == '__main__':
-    ##     fattie = yacc.yacc()
 
-    # file = '../test/test.txt'
     if len(sys.argv) > 1:
         file = sys.argv[1]
         try:
