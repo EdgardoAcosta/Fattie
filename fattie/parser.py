@@ -9,18 +9,17 @@ def p_program(p):
 
 
 def p_empty_spaces(p):
-    ''' empty_spaces : NEW_LINE  empty_spaces
+    ''' empty_spaces : empty_spaces NEW_LINE
                     | empty'''
 
 
-#######Todo: Check more than one variable
 def p_program_vars(p):
-    '''program_vars : variable NEW_LINE
+    '''program_vars : program_vars variable
                     | empty'''
 
 
 def p_program_functions(p):
-    '''program_functions : function program_functions NEW_LINE
+    '''program_functions : program_functions function
                          | empty'''
 
 
@@ -29,7 +28,7 @@ def p_main(p):
 
 
 def p_sub_main(p):
-    '''sub_main : NEW_LINE function_call block sub_main
+    '''sub_main : sub_main NEW_LINE function_call block
                 | empty'''
 
 
@@ -110,23 +109,23 @@ def p_else(p):
 
 
 def p_expression(p):
-    '''expression : exp comparation'''
+    '''expression : exp comparison'''
 
 
 def p_exp(p):
     '''exp : term operator'''
 
 
-def p_comparation(p):
-    '''comparation : EQUALS comparation_exp
-                   | LESS comparation_exp
-                   | GREATER comparation_exp
-                   | NOTEQUAL comparation_exp
+def p_comparison(p):
+    '''comparison : EQUALS comparison_exp
+                   | LESS comparison_exp
+                   | GREATER comparison_exp
+                   | NOTEQUAL comparison_exp
                    | empty'''
 
 
-def p_comparation_exp(p):
-    '''comparation_exp : exp'''
+def p_comparison_exp(p):
+    '''comparison_exp : exp'''
 
 
 def p_term(p):
@@ -135,12 +134,12 @@ def p_term(p):
 
 def p_operator(p):
     '''operator : sign term operator
-     | empty'''
+                | empty'''
 
 
 def p_factor(p):
     '''factor :  sign OPEN_PAREN expression CLOSE_PAREN
-              | sign sign var_cte'''
+              | sign var_cte'''
 
 
 def p_term_factor(p):
@@ -150,18 +149,21 @@ def p_term_factor(p):
 
 
 def p_variable(p):
-    '''variable : VAR type COLON  variable_body SEMICOLON'''
+    '''variable : VAR type COLON variable_body NEW_LINE'''
 
 
 def p_variable_body(p):
-    '''variable_body : ID sub_variable
-                     | empty'''
+    '''variable_body :  ID variable_array more_variables '''
 
 
-def p_sub_variable(p):
-    '''sub_variable : COMMA ID sub_variable
-                    | OPEN_BRACKET CTEI CLOSE_BRACKET sub_variable
-                    | empty'''
+def p_more_variables(p):
+    '''more_variables : more_variables COMMA ID variable_array
+                      | empty'''
+
+
+def p_variable_array(p):
+    '''variable_array : OPEN_BRACKET CTEI CLOSE_BRACKET
+                       | empty'''
 
 
 def p_function(p):
@@ -315,7 +317,7 @@ def p_sub_var_cte(p):
 
 
 def p_type(p):
-    '''type :  INT
+    '''type : INT
             | FLOAT
             | CHAR
             | BOOLEAN'''
@@ -331,7 +333,7 @@ def p_error(p):
     if p is None:
         print("Unexpected EOF")
     else:
-        print(p.type)
+        print("Type -> " + p.type + " Value -> " + p.value)
         print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 

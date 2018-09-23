@@ -15,8 +15,8 @@ reserved = {
     "_color": "COLOR",
     "_circle": "CIRCLE",
     "_square": "SQUARE",
-    "_clean": "CLEAN",
-    "_draw": "DRAW",
+    "clean": "CLEAN",
+    "draw": "DRAW",
     "_startPosition": "STARTPOSITION",
     "_screenSizesX": "SCREENSIZESX",
     "_screenSizesY": "SCREENSIZESY",
@@ -77,7 +77,7 @@ def t_ignore_SINGLE_COMMENT(t):
 
 
 def t_ID(t):
-    r'[A-Za-z]([A-Za-z] | [0-9])*'
+    r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
     # print(t.type + t.value)
     return t
@@ -125,7 +125,8 @@ def first_word(s):
 
 
 def t_error(t):
-    print("Unexpected \"{}\" at line {}".format(first_word(t.value), t.lexer.lineno))
+    raise SyntaxError(t)
+    # print("Unexpected \"{}\" at line {}".format(first_word(t.value), t.lexer.lineno))
 
 
 fattie_lexer = Indents(lex.lex())
