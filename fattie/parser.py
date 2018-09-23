@@ -13,6 +13,7 @@ def p_empty_spaces(p):
                     | empty'''
 
 
+#######Todo: Check more than one variable
 def p_program_vars(p):
     '''program_vars : variable NEW_LINE
                     | empty'''
@@ -48,30 +49,46 @@ def p_sub_expression(p):
 
 
 def p_block(p):
-    '''block : INDENT sub_block DEDENT'''
+    '''block : INDENT block_body DEDENT'''
     pass
 
 
-def p_sub_block(p):
-    '''sub_block : sub_block statement
+def p_block_body(p):
+    '''block_body : block_body sub_block_body
                 | empty'''
     pass
 
 
+def p_sub_block_body(p):
+    '''sub_block_body : statement
+                      | variable'''
+    pass
+
+
 def p_statement(p):
-    '''statement : while 
-                 | for 
-                 | assignation NEW_LINE
-                 | if
-                 | special_fun NEW_LINE'''
+    '''statement : sub_statement'''
+    pass
+
+
+def p_sub_statement(p):
+    '''sub_statement : while
+                     | for
+                     | assignation NEW_LINE
+                     | if
+                     | special_fun NEW_LINE
+                     | RETURN expression NEW_LINE
+                     | function NEW_LINE'''
+    pass
 
 
 def p_while(p):
     '''while : WHILE expression ARROW NEW_LINE block'''
+    pass
 
 
 def p_for(p):
     '''for : FOR OPEN_PAREN expression TO expression CLOSE_PAREN ARROW block'''
+    pass
 
 
 def p_assignation(p):
@@ -133,7 +150,12 @@ def p_term_factor(p):
 
 
 def p_variable(p):
-    '''variable : VAR type COLON ID sub_variable SEMICOLON'''
+    '''variable : VAR type COLON  variable_body SEMICOLON'''
+
+
+def p_variable_body(p):
+    '''variable_body : ID sub_variable
+                     | empty'''
 
 
 def p_sub_variable(p):
