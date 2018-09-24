@@ -4,7 +4,14 @@ from core.indents import Indents
 # Reserved words
 reserved = {
     "main": "MAIN",
+    "fun": "FUN",
+    "var": "VAR",
+    "if": "IF",
+    "else": "ELSE",
+    "while": "WHILE",
+    "for": "FOR",
     "to": "TO",
+
     "_input": "INPUT",
     "_print": "PRINT",
     "_moveUp": "MOVEUP",
@@ -32,14 +39,9 @@ reserved = {
     "Int": "INT",
     "Float": "FLOAT",
     "Char": "CHAR",
-    "fun": "FUN",
-    "var": "VAR",
-    "if": "IF",
-    "else": "ELSE",
     "True": "TRUE",
     "False": "FALSE",
-    "while": "WHILE",
-    "for": "FOR",
+
     "equals": "EQUALS",
     "less": "LESS",
     "greater": "GREATER",
@@ -52,9 +54,11 @@ reserved = {
 tokens = [
              'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'SEMICOLON', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
              'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
-             'ARROW'
+             'ARROW', 'LEFTBRACKET', 'RIGHTBRACKET'
          ] + list(reserved.values())
 
+t_LEFTBRACKET = r'\{'
+t_RIGHTBRACKET = r'\}'
 t_EQUAL = r'\='
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
@@ -83,13 +87,6 @@ def t_ID(t):
     return t
 
 
-# Define a float number
-def t_CTEF(t):
-    r'[0-9]*\.[0-9]+|[0-9]+'
-    t.value = float(t.value)
-    return t
-
-
 # Define a variable int
 def t_CTEI(t):
     r'[0-9]+'
@@ -97,10 +94,18 @@ def t_CTEI(t):
     return t
 
 
+# Define a float number
+def t_CTEF(t):
+    r'[0-9]*\.[0-9]+|[0-9]+'
+    t.value = float(t.value)
+    return t
+
+
 # Todo: Check rexe for char
 # Define a variable Chart
 def t_CTEC(t):
-    r'\".*\"'
+    r'\".*\"$'
+
     t.value = t.value[1:-1]
     return t
 
@@ -125,8 +130,8 @@ def first_word(s):
 
 
 def t_error(t):
-    raise SyntaxError(t)
-    # print("Unexpected \"{}\" at line {}".format(first_word(t.value), t.lexer.lineno))
+    # raise SyntaxError(t)
+    print("Unexpected \"{}\" at line {}".format(first_word(t.value), t.lexer.lineno))
 
 
 fattie_lexer = Indents(lex.lex())

@@ -53,15 +53,15 @@ def p_block(p):
 
 
 def p_block_body(p):
-    '''block_body : block_body sub_block_body
-                | empty'''
+    '''block_body : sub_block_body block_body
+                  | empty'''
     pass
 
 
 def p_sub_block_body(p):
     '''sub_block_body : statement
                       | variable'''
-    pass
+
 
 
 def p_statement(p):
@@ -100,11 +100,11 @@ def p_array_assignation(p):
 
 
 def p_if(p):
-    '''if : IF expression ARROW NEW_LINE block else'''
+    '''if : IF expression ARROW NEW_LINE block optional_else'''
 
 
-def p_else(p):
-    '''else :  ELSE  NEW_LINE  block
+def p_optional_else(p):
+    '''optional_else :  ELSE  NEW_LINE  block
             | empty'''
 
 
@@ -149,11 +149,20 @@ def p_term_factor(p):
 
 
 def p_variable(p):
-    '''variable : VAR type COLON variable_body NEW_LINE'''
+    '''variable : VAR type COLON var_id NEW_LINE'''
 
 
-def p_variable_body(p):
-    '''variable_body :  ID variable_array more_variables '''
+def p_var_id(p):
+    '''var_id : ID variable_array more_variables'''
+
+
+# def p_variable_body(p):
+#     '''variable_body :  ID variable_array more_variables '''
+#
+
+# def p_vars_block(p):
+#     '''vars_block : vars_block var_id type COLON NEW_LINE
+#                   | empty'''
 
 
 def p_more_variables(p):
@@ -167,7 +176,7 @@ def p_variable_array(p):
 
 
 def p_function(p):
-    '''function : FUN ID OPEN_PAREN  function_variables  CLOSE_PAREN function_return_type ARROW  NEW_LINE block'''
+    '''function : FUN ID OPEN_PAREN  function_variables  CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
 
 
 def p_function_variables(p):
@@ -213,8 +222,13 @@ def p_input(p):  # TODO : Check the value inside input
     '''input : INPUT OPEN_PAREN  expression CLOSE_PAREN'''
 
 
-def p_print(p):  # TODO : Check the value inside print
-    '''print :  PRINT OPEN_PAREN expression CLOSE_PAREN'''
+def p_print(p):
+    '''print :  PRINT OPEN_PAREN print_value CLOSE_PAREN'''
+
+
+def p_print_value(p):
+    '''print_value : print_value expression
+                    | CTEC '''
 
 
 def p_move_up(p):
@@ -299,8 +313,7 @@ def p_sleep(p):
 ##########################STATIC#################################################
 def p_sign(p):
     '''sign : PLUS
-            | MINUS
-            | empty'''
+            | MINUS'''
 
 
 def p_var_cte(p):
@@ -333,8 +346,8 @@ def p_error(p):
     if p is None:
         print("Unexpected EOF")
     else:
-        print("Type -> " + p.type + " Value -> " + p.value)
-        print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+        print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
+        # print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
 yacc.yacc()
