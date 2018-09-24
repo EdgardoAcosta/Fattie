@@ -19,7 +19,7 @@ ENV/
 env.bak/
 
 # Test files
-fattie/test/*
+test/*
 
 fattie/__pycache__/
 fattie/core/__pycache__/
