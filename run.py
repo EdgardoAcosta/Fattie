@@ -22,8 +22,12 @@ def _main():
 
 
 def _compile(data):
-    par = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
-    print(par)
+    parser = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
+    if parser == "COMPILED":
+        print("Compiled successfully ")
+    else:
+        pass
+
 
 if __name__ == '__main__':
     _main()
