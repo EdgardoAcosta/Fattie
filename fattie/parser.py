@@ -1,6 +1,6 @@
 import sys
 import ply.yacc as yacc
-from scanner import tokens
+from fattie.scanner import tokens
 
 
 def p_program(p):
@@ -63,7 +63,6 @@ def p_sub_block_body(p):
                       | variable'''
 
 
-
 def p_statement(p):
     '''statement : sub_statement'''
     pass
@@ -75,8 +74,7 @@ def p_sub_statement(p):
                      | assignation NEW_LINE
                      | if
                      | special_fun NEW_LINE
-                     | RETURN expression NEW_LINE
-                     | function NEW_LINE'''
+                     | RETURN expression NEW_LINE'''
     pass
 
 
@@ -86,7 +84,7 @@ def p_while(p):
 
 
 def p_for(p):
-    '''for : FOR OPEN_PAREN expression TO expression CLOSE_PAREN ARROW block'''
+    '''for : FOR OPEN_PAREN expression TO expression CLOSE_PAREN ARROW NEW_LINE block'''
     pass
 
 
@@ -156,15 +154,6 @@ def p_var_id(p):
     '''var_id : ID variable_array more_variables'''
 
 
-# def p_variable_body(p):
-#     '''variable_body :  ID variable_array more_variables '''
-#
-
-# def p_vars_block(p):
-#     '''vars_block : vars_block var_id type COLON NEW_LINE
-#                   | empty'''
-
-
 def p_more_variables(p):
     '''more_variables : more_variables COMMA ID variable_array
                       | empty'''
@@ -176,17 +165,26 @@ def p_variable_array(p):
 
 
 def p_function(p):
-    '''function : FUN ID OPEN_PAREN  function_variables  CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
+    '''function : FUN function_id OPEN_PAREN  function_params  CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
 
 
-def p_function_variables(p):
-    '''function_variables : type COLON ID sub_function_variables
-                          | empty'''
+def p_function_id(p):
+    '''function_id : ID'''
 
 
-def p_sub_function_variables(p):
-    '''sub_function_variables : COMMA function_variables
-                              | empty'''
+def p_function_params(p):
+    '''function_params : param more_params
+                       | empty'''
+
+
+def p_param(p):
+    '''param : type COLON ID '''
+
+
+def p_more_params(p):
+    '''more_params : more_params COMMA param
+                   | empty'''
+    pass
 
 
 def p_function_return_type(p):
@@ -343,26 +341,28 @@ def p_empty(p):
 
 
 def p_error(p):
-    if p is None:
-        print("Unexpected EOF")
-    else:
-        print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
-        # print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+    # if p is None:
+    #     print("Unexpected EOF")
+    # else:
+    print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
+    print(p)
+    # print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
-yacc.yacc()
+parser_fattie = yacc.yacc()
 
-if __name__ == '__main__':
-
-    if len(sys.argv) > 1:
-        file = sys.argv[1]
-        try:
-            f = open(file, 'r')
-            data = f.read()
-            f.close()
-            if yacc.parse(data) == "COMPILED":
-                print("Valid input")
-        except EOFError:
-            print(EOFError)
-    else:
-        print("No file to test found")
+#
+# if __name__ == '__main__':
+#
+#     if len(sys.argv) > 1:
+#         file = sys.argv[1]
+#         try:
+#             f = open(file, 'r')
+#             data = f.read()
+#             f.close()
+#             if parser_fattie.parse(data) == "COMPILED":
+#                 print("Valid input")
+#         except EOFError:
+#             print(EOFError)
+#     else:
+#         print("No file to test found")

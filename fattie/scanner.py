@@ -1,5 +1,5 @@
 import ply.lex as lex
-from core.indents import Indents
+from fattie.core.indents import Indents
 
 # Reserved words
 reserved = {
@@ -105,7 +105,6 @@ def t_CTEF(t):
 # Define a variable Chart
 def t_CTEC(t):
     r'\".*\"$'
-
     t.value = t.value[1:-1]
     return t
 
