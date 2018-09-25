@@ -19,3 +19,4 @@ class VariableTable:
             return True
         # Return false if already exist variable
         return False
+

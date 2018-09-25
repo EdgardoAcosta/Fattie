@@ -14,3 +14,4 @@ class UndefinedVariable(FattieError):
     def __init__(self, msg):
         self.msg = msg
         self.err_name = 'Undefined variable'
+

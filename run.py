@@ -19,7 +19,6 @@ def _main():
         for line in sys.stdin:
 
             data = data + line
-
     _compile(data)
 
 

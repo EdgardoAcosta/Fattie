@@ -20,5 +20,4 @@ class Chubby:
 
         if global_variable is None and global_variable is None:
             raise UndefinedVariable(id)
-
         return local_variable
