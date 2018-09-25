@@ -15,7 +15,9 @@ def _main():
             print(EOFError)
     else:
         print("No file to test found")
+        print("-> ")
         for line in sys.stdin:
+
             data = data + line
 
     _compile(data)
