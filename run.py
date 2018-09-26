@@ -17,12 +17,11 @@ def _main():
         print("No file to test found")
         print("-> ")
         for line in sys.stdin:
-
             data = data + line
-    _compile(data)
+    _eat(data)
 
 
-def _compile(data):
+def _eat(data):
     parser = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
     if parser == "COMPILED":
         print("Compiled successfully ")

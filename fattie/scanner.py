@@ -54,11 +54,9 @@ reserved = {
 tokens = [
              'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'SEMICOLON', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
              'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
-             'ARROW', 'LEFTBRACKET', 'RIGHTBRACKET'
+             'ARROW', 'ARRAY', 'MATRIX'
          ] + list(reserved.values())
 
-t_LEFTBRACKET = r'\{'
-t_RIGHTBRACKET = r'\}'
 t_EQUAL = r'\='
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
@@ -72,6 +70,8 @@ t_MINUS = r'\-'
 t_TIMES = r'\*'
 t_DIVIDE = r'\/'
 t_ARROW = r'\=\>'
+t_ARRAY = r'\[[0-9]*\]'
+t_MATRIX = r'\[[0-9]*\]\[[0-9]*\]'
 t_ignore = ' '
 
 

@@ -7,7 +7,9 @@ from fattie.chubby import Chubby
 
 chubby = Chubby()
 
-function_param = []
+function_param = []  # Function to store parameters of a function
+more_variable = []  # Variable to store the ID of variables in same row
+global_variable = False  # Variable to check if variables are on global scope
 
 
 def p_program(p):
@@ -154,21 +156,32 @@ def p_term_factor(p):
 
 
 def p_variable(p):
-    '''variable : VAR type COLON var_id NEW_LINE'''
+    '''variable : VAR var_id NEW_LINE'''
 
 
 def p_var_id(p):
-    '''var_id : ID variable_array more_variables'''
+    '''var_id : type COLON  ID variable_array more_variables'''
+
+    try:
+        chubby.add_local_variable(p[3], p[1])
+        for var in more_variable:
+            chubby.add_local_variable(var, p[1])
+        more_variable.clear()
+    except BigError as e:
+        print(p.lineneo(1))
 
 
 def p_more_variables(p):
-    '''more_variables : more_variables COMMA ID variable_array
+    '''more_variables : more_variables ID variable_array COMMA
                       | empty'''
+    if p[0] is not None:
+        more_variable.append(p[2])
 
 
 def p_variable_array(p):
-    '''variable_array : OPEN_BRACKET CTEI CLOSE_BRACKET
-                       | empty'''
+    '''variable_array : ARRAY
+                      | MATRIX
+                      | empty'''
 
 
 def p_function(p):
@@ -193,7 +206,7 @@ def p_function_params(p):
 
 def p_param(p):
     '''param : type COLON ID '''
-    function_param.append({"id": p[3], "value": p[1]})
+    function_param.append({"id": p[3], "type": p[1]})
 
 
 def p_more_params(p):
@@ -327,6 +340,7 @@ def p_sleep(p):
 def p_sign(p):
     '''sign : PLUS
             | MINUS'''
+    p[0] = p[1]
 
 
 def p_var_cte(p):
@@ -334,6 +348,7 @@ def p_var_cte(p):
                | CTEI
                | CTEF
                | CTEC'''
+    # p[0] = p[1]
 
 
 def p_sub_var_cte(p):
@@ -360,9 +375,9 @@ def p_error(p):
     # if p is None:
     #     print("Unexpected EOF")
     # else:
-    print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
-    print(p)
-    # print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+    # print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
+    # print(p)
+    print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
 parser_fattie = yacc.yacc()

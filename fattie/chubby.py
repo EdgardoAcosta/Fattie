@@ -10,15 +10,15 @@ class Chubby:
         self._local_variable = FluffyVariableTable()
         self._functions = HeavyFunctionTable()
 
-    def add_global_variable(self, id, value):
-        self._global_variable.add_variable(id, value)
+    def add_global_variable(self, id_var, type_variable, value=None):
+        self._global_variable.add_variable(id_var, type_variable, value)
 
-    def add_local_variable(self, id, value):
-        self._local_variable.add_variable(id, value)
+    def add_local_variable(self, id_var, type_variable, value=None):
+        self._local_variable.add_variable(id_var, type_variable, value)
 
-    def find_variable(self, id):
-        local_variable = self._local_variable.find_variable(id)
-        global_variable = self._local_variable.find_variable(id)
+    def find_variable(self, id_var):
+        local_variable = self._local_variable.find_variable(id_var)
+        global_variable = self._local_variable.find_variable(id_var)
 
         if local_variable is not None:
             return local_variable
@@ -27,13 +27,13 @@ class Chubby:
         else:
             raise BigError.undefined_variable('Variable not defined')
 
-    def add_function(self, id, type, params):
-        self._functions.add_function(id, type, params)
+    def add_function(self, id_fun, return_type, params):
+        self._functions.add_function(id_fun, return_type, params)
 
-    def find_function(self, id):
-        function = self._functions.find_function(id)
+    def find_function(self, id_fun):
+        func = self._functions.find_function(id_fun)
 
-        if function is None:
-            return function
+        if func is None:
+            return func
         else:
             raise BigError.undefined_function('Function Undefined')

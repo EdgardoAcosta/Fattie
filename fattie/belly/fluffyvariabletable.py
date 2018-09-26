@@ -6,13 +6,17 @@ class FluffyVariableTable:
         self.variable = {}  # Dictionary of variables
 
     # Check if variable is on dictionary of if is in parent
-    def find_variable(self, id):
-        return self.variable.get(id)
+    def find_variable(self, id_var):
+        return self.variable.get(id_var)
 
-    def add_variable(self, id, value):
-        if id not in self.variable:
+    def add_variable(self, id_var, type_variable, value):
+        if id_var not in self.variable:
             # Save de variable if not in dictionary
-            self.variable[id] = value
+            self.variable[id_var] = {
+                "value": value,
+                "type": type_variable
+            }
+            print(self.scope)
             return True
         # Return false if already exist variable
         return False
