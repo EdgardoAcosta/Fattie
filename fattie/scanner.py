@@ -1,5 +1,5 @@
 import ply.lex as lex
-from fattie.core.indents import Indents
+from fattie.belly.indents import Indents
 
 # Reserved words
 reserved = {

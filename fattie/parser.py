@@ -1,6 +1,13 @@
 import sys
 import ply.yacc as yacc
 from fattie.scanner import tokens
+from fattie.belly.exceptions import BigError
+
+from fattie.chubby import Chubby
+
+chubby = Chubby()
+
+function_param = []
 
 
 def p_program(p):
@@ -167,22 +174,30 @@ def p_variable_array(p):
 def p_function(p):
     '''function : FUN function_id OPEN_PAREN  function_params  CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
 
+    try:
+        chubby.add_function(p[2], p[5], function_param)
+        function_param.clear()
+    except BigError as e:
+        print(p.lineneo(1))
+
 
 def p_function_id(p):
     '''function_id : ID'''
+    p[0] = p[1]
 
 
 def p_function_params(p):
-    '''function_params : param more_params
+    '''function_params : more_params param
                        | empty'''
 
 
 def p_param(p):
     '''param : type COLON ID '''
+    function_param.append({"id": p[3], "value": p[1]})
 
 
 def p_more_params(p):
-    '''more_params : more_params COMMA param
+    '''more_params : more_params param COMMA
                    | empty'''
     pass
 
@@ -332,7 +347,8 @@ def p_type(p):
             | FLOAT
             | CHAR
             | BOOLEAN'''
-    pass
+
+    p[0] = p[1]
 
 
 def p_empty(p):
