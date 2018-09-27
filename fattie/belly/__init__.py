@@ -6,3 +6,5 @@ class VariableTypes(Enum):
     Float = "Float"
     Char = "Char"
     Boolean = "Boolean"
+
+

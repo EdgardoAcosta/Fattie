@@ -16,7 +16,7 @@ class FluffyVariableTable:
                 "value": value,
                 "type": type_variable
             }
-            print(self.scope)
+            print(self.variable)
             return True
         # Return false if already exist variable
         return False

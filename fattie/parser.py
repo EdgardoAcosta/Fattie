@@ -1,19 +1,24 @@
 import sys
 import ply.yacc as yacc
-from fattie.scanner import tokens
-from fattie.belly.exceptions import BigError
-import fattie.belly.builder as builder
 from fattie.chubby import Chubby
+from fattie.scanner import tokens
+from fattie.belly.fluffyvariabletable import FluffyVariableTable
+from fattie.belly.heavyfunctiontable import HeavyFunctionTable
+from fattie.belly.builder import Builder
+from fattie.belly.exceptions import BigError
 
 chubby = Chubby()
 
 function_param = []  # Function to store parameters of a function
 more_variable = []  # Variable to store the ID of variables in same row
 global_variable = False  # Variable to check if variables are on global scope
+fn_builder = Builder(HeavyFunctionTable)
+var_builder = Builder(FluffyVariableTable)
+variable_type = ''
 
 
 def p_program(p):
-    '''program : empty_spaces program_vars program_functions main '''
+    '''program : empty_spaces program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
 
 
@@ -25,9 +30,14 @@ def p_empty_spaces(p):
 def p_program_vars(p):
     '''program_vars : program_vars variable
                     | empty'''
+
+
+def p_n_program_vars(p):
+    '''n_program_vars : '''
     try:
         for var in more_variable:
-            chubby.add_global_variable(var['id'], var['type'])
+            chubby.add_global_variable(var, variable_type)
+            more_variable.clear()
     except BigError as e:
         e.print(p.lineneo(1))
 
@@ -42,8 +52,19 @@ def p_main(p):
 
 
 def p_sub_main(p):
-    '''sub_main : sub_main NEW_LINE function_call block
+    '''sub_main : sub_main NEW_LINE function_call block n_main
                 | empty'''
+
+    # try:
+    #     for var in more_variable:
+    #         chubby.add_local_variable(var, variable_type)
+    #         more_variable.clear()
+    # except BigError as e:
+    #     e.print(p.lineneo(1))
+
+
+def p_n_main(p):
+    '''n_main : '''
 
 
 def p_function_call(p):
@@ -78,13 +99,13 @@ def p_sub_block_body(p):
 
 
 def p_block_variable(p):
-    '''block_variable: variable'''
-    try:
-        for var in more_variable:
-            chubby.add_local_variable(var['id'], var['type'])
-        more_variable.clear()
-    except BigError as e:
-        e.print(p.lineneo(1))
+    '''block_variable : variable'''
+    # try:
+    #     for var in more_variable:
+    #         chubby.add_local_variable(var['id'], var['type'])
+    #     more_variable.clear()
+    # except BigError as e:
+    #     e.print(p.lineneo(1))
 
 
 def p_statement(p):
@@ -176,11 +197,10 @@ def p_variable(p):
 
 def p_var_id(p):
     '''var_id : type COLON  ID variable_array more_variables'''
-    var_builder = {}
-    var_builder['id'] = p[3]
-    var_builder['type'] = p[1]
 
-    more_variable.append(var_builder)
+    variable_type = p[1]
+
+    more_variable.append(p[3])
 
 
 def p_more_variables(p):
@@ -197,15 +217,15 @@ def p_variable_array(p):
 
 
 def p_function(p):
-    '''function : FUN function_id n_function_id OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
-    id = P[2]
+    '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW NEW_LINE n_function block'''
 
-def p_n_function_id(p):
-    '''n_function_id : '''
 
-    builder.builder_function['id'] = ''
+def p_n_function(p):
+    '''n_function : '''
+
     try:
-        chubby.add_function(p[2], p[5], function_param)
+        var = fn_builder.build()
+        chubby.add_function(var)
         function_param.clear()
     except BigError as e:
         e.print(p.lineneo(1))
@@ -214,11 +234,13 @@ def p_n_function_id(p):
 def p_function_id(p):
     '''function_id : ID'''
     p[0] = p[1]
+    fn_builder.put('id_function', p[1])
 
 
 def p_function_params(p):
     '''function_params : more_params param
                        | empty'''
+    fn_builder.put('params', function_param)
 
 
 def p_param(p):
@@ -235,6 +257,11 @@ def p_more_params(p):
 def p_function_return_type(p):
     '''function_return_type : COLON type
                             | empty'''
+
+    if p[1] is None:
+        value_return = None
+    value_return = p[2]
+    fn_builder.put('return_type', value_return)
 
 
 ##########################SPECIAL FUNCTIONS#######################################

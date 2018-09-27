@@ -27,8 +27,10 @@ class Chubby:
         else:
             raise BigError.undefined_variable('Variable not defined')
 
-    def add_function(self, id_fun, return_type=None, params = None):
-        self._functions.add_function(id_fun, return_type, params)
+    def add_function(self, instance):
+        pass
+        # print(instance)
+        # self._functions.add_function(instance)
 
     def find_function(self, id_fun):
         func = self._functions.find_function(id_fun)
