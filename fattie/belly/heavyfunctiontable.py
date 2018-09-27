@@ -12,7 +12,7 @@ class HeavyFunctionTable():
         return self.function.get(id)
 
     # Add a new function to the table
-    def add_function(self, id_function, return_type, params=None):
+    def add_function(self, id_function, return_type, params):
         if id_function not in self.function:  # If the function don't exist on the table
             self.function[id_function] = {
                 "type": return_type,

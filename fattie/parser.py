@@ -2,7 +2,7 @@ import sys
 import ply.yacc as yacc
 from fattie.scanner import tokens
 from fattie.belly.exceptions import BigError
-
+import fattie.belly.builder as builder
 from fattie.chubby import Chubby
 
 chubby = Chubby()
@@ -25,6 +25,11 @@ def p_empty_spaces(p):
 def p_program_vars(p):
     '''program_vars : program_vars variable
                     | empty'''
+    try:
+        for var in more_variable:
+            chubby.add_global_variable(var['id'], var['type'])
+    except BigError as e:
+        e.print(p.lineneo(1))
 
 
 def p_program_functions(p):
@@ -69,7 +74,17 @@ def p_block_body(p):
 
 def p_sub_block_body(p):
     '''sub_block_body : statement
-                      | variable'''
+                      | block_variable'''
+
+
+def p_block_variable(p):
+    '''block_variable: variable'''
+    try:
+        for var in more_variable:
+            chubby.add_local_variable(var['id'], var['type'])
+        more_variable.clear()
+    except BigError as e:
+        e.print(p.lineneo(1))
 
 
 def p_statement(p):
@@ -161,14 +176,11 @@ def p_variable(p):
 
 def p_var_id(p):
     '''var_id : type COLON  ID variable_array more_variables'''
+    var_builder = {}
+    var_builder['id'] = p[3]
+    var_builder['type'] = p[1]
 
-    try:
-        chubby.add_local_variable(p[3], p[1])
-        for var in more_variable:
-            chubby.add_local_variable(var, p[1])
-        more_variable.clear()
-    except BigError as e:
-        print(p.lineneo(1))
+    more_variable.append(var_builder)
 
 
 def p_more_variables(p):
@@ -185,13 +197,18 @@ def p_variable_array(p):
 
 
 def p_function(p):
-    '''function : FUN function_id OPEN_PAREN  function_params  CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
+    '''function : FUN function_id n_function_id OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW NEW_LINE block'''
+    id = P[2]
 
+def p_n_function_id(p):
+    '''n_function_id : '''
+
+    builder.builder_function['id'] = ''
     try:
         chubby.add_function(p[2], p[5], function_param)
         function_param.clear()
     except BigError as e:
-        print(p.lineneo(1))
+        e.print(p.lineneo(1))
 
 
 def p_function_id(p):
