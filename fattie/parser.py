@@ -314,44 +314,44 @@ def p_special_fun(p):
 
 
 def p_input(p):  # TODO : Check the value inside input
-    '''input : INPUT  expression '''
+    '''input : INPUT OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_print(p):
-    '''print :  PRINT print_value '''
+    '''print : PRINT OPEN_PAREN  expression print_value  CLOSE_PAREN'''
 
 
 def p_print_value(p):
-    '''print_value : print_value expression
-                    | CTEC '''
+    '''print_value : print_value COMMA expression
+                   | empty'''
 
 
 def p_move_up(p):
-    '''move_up :  MOVEUP  expression '''
+    '''move_up :  MOVEUP OPEN_PAREN  expression CLOSE_PAREN'''
 
 
 def p_move_down(p):
-    '''move_down :  MOVEDOWN  expression'''
+    '''move_down :  MOVEDOWN OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_move_right(p):
-    '''move_right :  MOVERIGHT expression'''
+    '''move_right :  MOVERIGHT OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_move_left(p):
-    '''move_left :  MOVELEFT expression '''
+    '''move_left :  MOVELEFT OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_angle(p):
-    '''angle :  ANGLE expression'''
+    '''angle :  ANGLE OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_color(p):
-    '''color :  COLOR expression'''
+    '''color :  COLOR OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_circle(p):
-    '''circle :  CIRCLE expression sub_circle '''
+    '''circle :  CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
 
 
 def p_sub_circle(p):
@@ -361,7 +361,7 @@ def p_sub_circle(p):
 
 
 def p_square(p):
-    '''square :  SQUARE expression COMMA expression sub_square '''
+    '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
 
 
 def p_sub_square(p):
@@ -370,39 +370,39 @@ def p_sub_square(p):
 
 
 def p_clean(p):
-    '''clean :  CLEAN expression'''
+    '''clean :  CLEAN OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_draw(p):
-    '''draw :  DRAW expression'''
+    '''draw :  DRAW OPEN_PAREN expression'''
 
 
 def p_start_point(p):
-    '''start_point : STARTPOSITION expression COMMA expression'''
+    '''start_point : STARTPOSITION OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
 
 
 def p_screen_sizes_x(p):
-    '''screen_sizes_x :  SCREENSIZESX'''
+    '''screen_sizes_x :  SCREENSIZESX OPEN_PAREN CLOSE_PAREN'''
 
 
 def p_screen_sizes_y(p):
-    '''screen_sizes_y :  SCREENSIZESY'''
+    '''screen_sizes_y :  SCREENSIZESY OPEN_PAREN CLOSE_PAREN'''
 
 
 def p_go(p):
-    '''go :  GO expression COMMA expression'''
+    '''go :  GO OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
 
 
 def p_fibonacci(p):
-    '''fibonacci : FIBONACCI expression'''
+    '''fibonacci : FIBONACCI OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_factorial(p):
-    '''factorial : FACTORIAL expression'''
+    '''factorial : FACTORIAL OPEN_PAREN expression CLOSE_PAREN'''
 
 
 def p_sleep(p):
-    '''sleep :  SLEEP expression'''
+    '''sleep :  SLEEP OPEN_PAREN expression CLOSE_PAREN'''
 
 
 # </editor-fold>
