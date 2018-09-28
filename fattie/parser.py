@@ -2,8 +2,8 @@ import sys
 import ply.yacc as yacc
 from fattie.chubby import Chubby
 from fattie.scanner import tokens
-from fattie.belly.fluffyvariabletable import FluffyVariableTable
-from fattie.belly.heavyfunctiontable import HeavyFunctionTable
+from fattie.belly.fluffyvariable import FluffyVariable
+from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.builder import Builder
 from fattie.belly.exceptions import BigError
 
@@ -11,12 +11,11 @@ chubby = Chubby()
 
 function_param = []  # Function to store parameters of a function
 more_variable = []  # Variable to store the ID of variables in same row
-global_variable = False  # Variable to check if variables are on global scope
-fn_builder = Builder(HeavyFunctionTable)
-var_builder = Builder(FluffyVariableTable)
-variable_type = ''
+fn_builder = Builder(HeavyFunction)
+var_builder = Builder(FluffyVariable)
 
 
+# <editor-fold desc="Program">
 def p_program(p):
     '''program : empty_spaces program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
@@ -36,7 +35,7 @@ def p_n_program_vars(p):
     '''n_program_vars : '''
     try:
         for var in more_variable:
-            chubby.add_global_variable(var, variable_type)
+            chubby.add_global_variable(var)
             more_variable.clear()
     except BigError as e:
         e.print(p.lineneo(1))
@@ -47,48 +46,45 @@ def p_program_functions(p):
                          | empty'''
 
 
+# </editor-fold>
+
+
+# <editor-fold desc="Main">
 def p_main(p):
-    '''main : MAIN ARROW sub_main'''
+    '''main : MAIN ARROW NEW_LINE n_main block '''
 
 
-def p_sub_main(p):
-    '''sub_main : sub_main NEW_LINE function_call block n_main
-                | empty'''
-
-    # try:
-    #     for var in more_variable:
-    #         chubby.add_local_variable(var, variable_type)
-    #         more_variable.clear()
-    # except BigError as e:
-    #     e.print(p.lineneo(1))
-
+#
 
 def p_n_main(p):
     '''n_main : '''
 
 
 def p_function_call(p):
-    '''function_call : ID EQUAL sub_function_call
-                    | sub_function_call
-                    | empty'''
+    '''function_call : ID OPEN_PAREN call_params CLOSE_PAREN NEW_LINE'''
 
 
-def p_sub_function_call(p):
-    '''sub_function_call : ID OPEN_PAREN sub_expression CLOSE_PAREN SEMICOLON'''
+def p_call_params(p):
+    '''call_params : expression sub_expression
+                   | empty'''
 
 
 def p_sub_expression(p):
-    '''sub_expression : expression
-                    | expression COMMA sub_expression'''
+    '''sub_expression : sub_expression COMMA expression
+                      | empty'''
 
 
+# </editor-fold>
+
+
+# <editor-fold desc="Block">
 def p_block(p):
     '''block : INDENT block_body DEDENT'''
     pass
 
 
 def p_block_body(p):
-    '''block_body : sub_block_body block_body
+    '''block_body : block_body sub_block_body
                   | empty'''
     pass
 
@@ -96,45 +92,59 @@ def p_block_body(p):
 def p_sub_block_body(p):
     '''sub_block_body : statement
                       | block_variable'''
+    pass
 
 
 def p_block_variable(p):
     '''block_variable : variable'''
-    # try:
-    #     for var in more_variable:
-    #         chubby.add_local_variable(var['id'], var['type'])
-    #     more_variable.clear()
-    # except BigError as e:
-    #     e.print(p.lineneo(1))
+    try:
+        for var in more_variable:
+            chubby.add_local_variable(var)
+            more_variable.clear()
+    except BigError as e:
+        e.print(p.lineneo(1))
 
 
 def p_statement(p):
-    '''statement : sub_statement'''
+    '''statement : while
+                 | for
+                 | assignation NEW_LINE
+                 | if
+                 | special_fun NEW_LINE
+                 | function_call
+                 | RETURN expression NEW_LINE'''
+
     pass
 
 
-def p_sub_statement(p):
-    '''sub_statement : while
-                     | for
-                     | assignation NEW_LINE
-                     | if
-                     | special_fun NEW_LINE
-                     | RETURN expression NEW_LINE'''
+# </editor-fold>
+
+
+# <editor-fold desc="Basic Functions">
+
+def p_block_statement(p):
+    '''block_statement : INDENT sub_block_statement statement NEW_LINE DEDENT'''
+    pass
+
+
+def p_sub_block_statement(p):
+    '''sub_block_statement : sub_block_statement statement NEW_LINE
+                           | empty '''
     pass
 
 
 def p_while(p):
-    '''while : WHILE expression ARROW NEW_LINE block'''
+    '''while : WHILE expression ARROW NEW_LINE block_statement'''
     pass
 
 
 def p_for(p):
-    '''for : FOR OPEN_PAREN expression TO expression CLOSE_PAREN ARROW NEW_LINE block'''
+    '''for : FOR OPEN_PAREN expression TO expression CLOSE_PAREN ARROW NEW_LINE block_statement'''
     pass
 
 
 def p_assignation(p):
-    '''assignation :  ID array_assignation EQUAL expression SEMICOLON'''
+    '''assignation :  ID array_assignation EQUAL expression NEW_LINE'''
 
 
 def p_array_assignation(p):
@@ -143,14 +153,18 @@ def p_array_assignation(p):
 
 
 def p_if(p):
-    '''if : IF expression ARROW NEW_LINE block optional_else'''
+    '''if : IF expression ARROW NEW_LINE block_statement optional_else'''
 
 
 def p_optional_else(p):
-    '''optional_else :  ELSE  NEW_LINE  block
+    '''optional_else :  ELSE  NEW_LINE  block_statement
             | empty'''
 
 
+# </editor-fold>
+
+
+# <editor-fold desc="Expression">
 def p_expression(p):
     '''expression : exp comparison'''
 
@@ -160,15 +174,11 @@ def p_exp(p):
 
 
 def p_comparison(p):
-    '''comparison : EQUALS comparison_exp
-                   | LESS comparison_exp
-                   | GREATER comparison_exp
-                   | NOTEQUAL comparison_exp
-                   | empty'''
-
-
-def p_comparison_exp(p):
-    '''comparison_exp : exp'''
+    '''comparison : EQUALS exp
+                  | LESS exp
+                  | GREATER exp
+                  | NOTEQUAL exp
+                  | empty'''
 
 
 def p_term(p):
@@ -176,38 +186,47 @@ def p_term(p):
 
 
 def p_operator(p):
-    '''operator : sign term operator
+    '''operator : sign exp
                 | empty'''
 
 
 def p_factor(p):
-    '''factor :  sign OPEN_PAREN expression CLOSE_PAREN
+    '''factor : sign OPEN_PAREN expression CLOSE_PAREN
               | sign var_cte'''
 
 
 def p_term_factor(p):
-    '''term_factor : TIMES factor term_factor
-                   | DIVIDE  factor term_factor
+    '''term_factor : TIMES term
+                   | DIVIDE term
                    | empty'''
 
 
+# </editor-fold>
+
+
+# <editor-fold desc="Variables">
 def p_variable(p):
     '''variable : VAR var_id NEW_LINE'''
 
 
 def p_var_id(p):
-    '''var_id : type COLON  ID variable_array more_variables'''
+    '''var_id : type save_type COLON  ID variable_array more_variables'''
+    var_builder.put('id_var', p[4])
+    more_variable.append(var_builder.build())
+    var_builder.clear()
 
-    variable_type = p[1]
 
-    more_variable.append(p[3])
+def p_save_type(p):
+    '''save_type : '''
+    var_builder.put('type_var', p[-1])
 
 
 def p_more_variables(p):
     '''more_variables : more_variables ID variable_array COMMA
                       | empty'''
-    if p[0] is not None:
-        more_variable.append(p[2])
+    if len(p) > 2:
+        var_builder.put('id_var', p[2])
+        more_variable.append(var_builder.build())
 
 
 def p_variable_array(p):
@@ -216,8 +235,14 @@ def p_variable_array(p):
                       | empty'''
 
 
+# </editor-fold>
+
+
+# <editor-fold desc="Function">
 def p_function(p):
     '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW NEW_LINE n_function block'''
+
+    fn_builder.clear()
 
 
 def p_n_function(p):
@@ -258,13 +283,16 @@ def p_function_return_type(p):
     '''function_return_type : COLON type
                             | empty'''
 
+    value_return = p[2]
     if p[1] is None:
         value_return = None
-    value_return = p[2]
     fn_builder.put('return_type', value_return)
 
 
-##########################SPECIAL FUNCTIONS#######################################
+# </editor-fold>
+
+
+# <editor-fold desc="Special functions">
 def p_special_fun(p):
     '''special_fun : input
                    | print
@@ -279,21 +307,18 @@ def p_special_fun(p):
                    | clean
                    | draw
                    | start_point
-                   | screen_sizes_x
-                   | screen_sizes_y
                    | go
                    | fibonacci
                    | factorial
-                   | sleep
-                   | empty'''
+                   | sleep'''
 
 
 def p_input(p):  # TODO : Check the value inside input
-    '''input : INPUT OPEN_PAREN  expression CLOSE_PAREN'''
+    '''input : INPUT  expression '''
 
 
 def p_print(p):
-    '''print :  PRINT OPEN_PAREN print_value CLOSE_PAREN'''
+    '''print :  PRINT print_value '''
 
 
 def p_print_value(p):
@@ -302,31 +327,31 @@ def p_print_value(p):
 
 
 def p_move_up(p):
-    '''move_up :  MOVEUP OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_up :  MOVEUP  expression '''
 
 
 def p_move_down(p):
-    '''move_down :  MOVEDOWN OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_down :  MOVEDOWN  expression'''
 
 
 def p_move_right(p):
-    '''move_right :  MOVERIGHT OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_right :  MOVERIGHT expression'''
 
 
 def p_move_left(p):
-    '''move_left :  MOVELEFT OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_left :  MOVELEFT expression '''
 
 
 def p_angle(p):
-    '''angle :  ANGLE OPEN_PAREN expression CLOSE_PAREN'''
+    '''angle :  ANGLE expression'''
 
 
 def p_color(p):
-    '''color :  COLOR OPEN_PAREN expression CLOSE_PAREN'''
+    '''color :  COLOR expression'''
 
 
 def p_circle(p):
-    '''circle :  CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
+    '''circle :  CIRCLE expression sub_circle '''
 
 
 def p_sub_circle(p):
@@ -336,7 +361,7 @@ def p_sub_circle(p):
 
 
 def p_square(p):
-    '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
+    '''square :  SQUARE expression COMMA expression sub_square '''
 
 
 def p_sub_square(p):
@@ -345,42 +370,45 @@ def p_sub_square(p):
 
 
 def p_clean(p):
-    '''clean :  CLEAN OPEN_PAREN expression CLOSE_PAREN'''
+    '''clean :  CLEAN expression'''
 
 
 def p_draw(p):
-    '''draw :  DRAW OPEN_PAREN expression CLOSE_PAREN'''
+    '''draw :  DRAW expression'''
 
 
 def p_start_point(p):
-    '''start_point : STARTPOSITION OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
+    '''start_point : STARTPOSITION expression COMMA expression'''
 
 
 def p_screen_sizes_x(p):
-    '''screen_sizes_x :  SCREENSIZESX OPEN_PAREN CLOSE_PAREN'''
+    '''screen_sizes_x :  SCREENSIZESX'''
 
 
 def p_screen_sizes_y(p):
-    '''screen_sizes_y :  SCREENSIZESY OPEN_PAREN CLOSE_PAREN'''
+    '''screen_sizes_y :  SCREENSIZESY'''
 
 
 def p_go(p):
-    '''go :  GO OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
+    '''go :  GO expression COMMA expression'''
 
 
 def p_fibonacci(p):
-    '''fibonacci : FIBONACCI OPEN_PAREN expression CLOSE_PAREN'''
+    '''fibonacci : FIBONACCI expression'''
 
 
 def p_factorial(p):
-    '''factorial : FACTORIAL OPEN_PAREN expression CLOSE_PAREN'''
+    '''factorial : FACTORIAL expression'''
 
 
 def p_sleep(p):
-    '''sleep :  SLEEP OPEN_PAREN expression CLOSE_PAREN'''
+    '''sleep :  SLEEP expression'''
 
 
-##########################STATIC#################################################
+# </editor-fold>
+
+
+# <editor-fold desc="Static Functions">
 def p_sign(p):
     '''sign : PLUS
             | MINUS'''
@@ -389,15 +417,17 @@ def p_sign(p):
 
 def p_var_cte(p):
     '''var_cte : ID sub_var_cte
+               | function_call
                | CTEI
                | CTEF
-               | CTEC'''
+               | CTEC
+               | screen_sizes_x
+               | screen_sizes_y'''
     # p[0] = p[1]
 
 
 def p_sub_var_cte(p):
-    '''sub_var_cte : OPEN_PAREN sub_expression CLOSE_PAREN
-                   | OPEN_BRACKET expression CLOSE_BRACKET
+    '''sub_var_cte : OPEN_BRACKET expression CLOSE_BRACKET
                    | empty'''
 
 
@@ -422,6 +452,9 @@ def p_error(p):
     # print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
     # print(p)
     print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+
+
+# </editor-fold>
 
 
 parser_fattie = yacc.yacc()

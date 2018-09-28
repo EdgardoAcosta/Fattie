@@ -7,7 +7,7 @@ class BigError(SyntaxError):
         self.err_name = 'Syntax error'
 
     def print(self, lineno):
-        print(self.err_name + ' at line {}: '.format(lineno) + self.msg, file=sys.stderr)
+        print('{} at line \{}\: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
 
     @staticmethod
     def undefined_variable(msg):
@@ -19,4 +19,16 @@ class BigError(SyntaxError):
     def undefined_function(msg):
         err = BigError(msg)
         err.err_name = 'Undefined function'
+        return err
+
+    @staticmethod
+    def redefined_funtion(msg):
+        err = BigError(msg)
+        err.err_name = 'Redefined function'
+        return err
+
+    @staticmethod
+    def redefined_variable(msg):
+        err = BigError(msg)
+        err.err_name = 'Redefined variable'
         return err

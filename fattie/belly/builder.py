@@ -18,10 +18,10 @@ class Builder:
 
         return self._target(*params)
 
-    def put(self, name, var):
+    def put(self, name, value):
         if name not in self._required:
-            raise AttributeError("Wrong values for the function")
-        self._attrs[name] = var
+            raise AttributeError("Wrong values for the function")  # Change raise Error
+        self._attrs[name] = value
         return self
 
     def clear(self):
