@@ -22,13 +22,11 @@ class Chubby:
         self._local_variable[instance.id_var] = instance
 
     def find_variable(self, id_var):
-        local_variable = self._local_variable.find_variable(id_var)
-        global_variable = self._local_variable.find_variable(id_var)
 
-        if local_variable is not None:
-            return local_variable
-        elif global_variable is not None:
-            return global_variable
+        if id_var in self._local_variable:
+            return self._local_variable.get(id_var)
+        elif id_var in self._global_variable:
+            return self._global_variable.get(id_var)
         else:
             raise BigError.undefined_variable('Variable not defined ')
 
