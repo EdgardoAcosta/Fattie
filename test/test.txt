@@ -1,0 +1,6 @@
+var Char: test8
+fun fun1(Int: parm1):Int=>
+		var Char: test1
+
+main =>
+		var Boolean : test0

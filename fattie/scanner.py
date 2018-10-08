@@ -1,8 +1,17 @@
 import ply.lex as lex
-from fattie.core.indents import Indents
+from fattie.belly.indents import Indents
 
 # Reserved words
 reserved = {
+    "main": "MAIN",
+    "fun": "FUN",
+    "var": "VAR",
+    "if": "IF",
+    "else": "ELSE",
+    "while": "WHILE",
+    "for": "FOR",
+    "to": "TO",
+
     "_input": "INPUT",
     "_print": "PRINT",
     "_moveUp": "MOVEUP",
@@ -13,8 +22,8 @@ reserved = {
     "_color": "COLOR",
     "_circle": "CIRCLE",
     "_square": "SQUARE",
-    "_clean": "CLEAN",
-    "_draw": "DRAW",
+    "clean": "CLEAN",
+    "draw": "DRAW",
     "_startPosition": "STARTPOSITION",
     "_screenSizesX": "SCREENSIZESX",
     "_screenSizesY": "SCREENSIZESY",
@@ -30,14 +39,9 @@ reserved = {
     "Int": "INT",
     "Float": "FLOAT",
     "Char": "CHAR",
-    "fun": "FUN",
-    "var": "VAR",
-    "if": "IF",
-    "else": "ELSE",
     "True": "TRUE",
     "False": "FALSE",
-    "while": "WHILE",
-    "for": "FOR",
+
     "equals": "EQUALS",
     "less": "LESS",
     "greater": "GREATER",
@@ -48,10 +52,12 @@ reserved = {
 
 # Token declaration
 tokens = [
-             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET', 'CLOSE_BRACKET',
-             'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT', 'ARROW'
+             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'SEMICOLON', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
+             'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
+             'ARROW', 'ARRAY', 'MATRIX'
          ] + list(reserved.values())
 
+t_EQUAL = r'\='
 t_SEMICOLON = r'\;'
 t_COLON = r'\:'
 t_COMMA = r'\,'
@@ -64,6 +70,9 @@ t_MINUS = r'\-'
 t_TIMES = r'\*'
 t_DIVIDE = r'\/'
 t_ARROW = r'\=\>'
+t_ARRAY = r'\[[0-9]*\]'
+t_MATRIX = r'\[[0-9]*\]\[[0-9]*\]'
+t_ignore = ' '
 
 
 def t_ignore_SINGLE_COMMENT(t):
@@ -72,8 +81,16 @@ def t_ignore_SINGLE_COMMENT(t):
 
 
 def t_ID(t):
-    r'[A-za-z]([A-za-z] | [0-9])'
+    r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
+    # print(t.type + t.value)
+    return t
+
+
+# Define a variable int
+def t_CTEI(t):
+    r'[0-9]+'
+    t.value = int(t.value)
     return t
 
 
@@ -84,17 +101,20 @@ def t_CTEF(t):
     return t
 
 
-# Define a variable int
-def t_CTEI(t):
-    r'\d+'
-    t.value = int(t.value)
+# Todo: Check rexe for char
+# Define a variable Chart
+def t_CTEC(t):
+    r'\".*\"$'
+    t.value = t.value[1:-1]
     return t
 
 
 # Define a new line or multiple new lines
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+def t_NEW_LINE(t):
+    r'\n\s*[\t ]*'
+    t.lexer.lineno += t.value.count('\n')
+    t.value = len(t.value) - 1 - t.value.rfind('\n')
+    return t
 
 
 def first_word(s):
@@ -109,6 +129,7 @@ def first_word(s):
 
 
 def t_error(t):
+    # raise SyntaxError(t)
     print("Unexpected \"{}\" at line {}".format(first_word(t.value), t.lexer.lineno))
 
 
