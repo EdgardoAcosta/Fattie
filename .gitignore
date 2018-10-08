@@ -4,8 +4,11 @@
 .idea/*
 out
 
-Phyton
+# Phyton
 *.out
+
+# PLY
+fattie/parsetab.py
 
 # pyenv
 .python-version
@@ -23,3 +26,4 @@ test/*
 
 fattie/__pycache__/
 fattie/core/__pycache__/
+fattie/belly/__pycache__/

@@ -1,6 +1,6 @@
-var Int: test8
-fun fun1(Int: value):Int=>
-		var Int: test1
+var Char: test8
+fun fun1(Int: parm1):Int=>
+		var Char: test1
 
 main =>
-		var Int : test0
+		var Boolean : test0
