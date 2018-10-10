@@ -7,6 +7,8 @@ from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.builder import Builder
 from fattie.belly.exceptions import BigError
 
+from fattie import cube
+
 chubby = Chubby()
 
 function_param = []  # Function to store parameters of a function
@@ -313,7 +315,7 @@ def p_special_fun(p):
                    | sleep'''
 
 
-def p_input(p):  # TODO : Check the value inside input
+def p_input(p):
     '''input : INPUT OPEN_PAREN expression CLOSE_PAREN'''
 
 
@@ -446,11 +448,6 @@ def p_empty(p):
 
 
 def p_error(p):
-    # if p is None:
-    #     print("Unexpected EOF")
-    # else:
-    # print("ERROR /////////// Type -> " + p.type + " Value -> " + str(p.value))
-    # print(p)
     print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
@@ -458,19 +455,3 @@ def p_error(p):
 
 
 parser_fattie = yacc.yacc()
-
-#
-# if __name__ == '__main__':
-#
-#     if len(sys.argv) > 1:
-#         file = sys.argv[1]
-#         try:
-#             f = open(file, 'r')
-#             data = f.read()
-#             f.close()
-#             if parser_fattie.parse(data) == "COMPILED":
-#                 print("Valid input")
-#         except EOFError:
-#             print(EOFError)
-#     else:
-#         print("No file to test found")

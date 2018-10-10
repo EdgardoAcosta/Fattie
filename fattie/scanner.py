@@ -12,25 +12,25 @@ reserved = {
     "for": "FOR",
     "to": "TO",
 
-    "_input": "INPUT",
-    "_print": "PRINT",
-    "_moveUp": "MOVEUP",
-    "_moveDown": "MOVEDOWN",
-    "_moveRight": "MOVERIGHT",
-    "_moveLeft": "MOVELEFT",
-    "_angle": "ANGLE",
-    "_color": "COLOR",
-    "_circle": "CIRCLE",
-    "_square": "SQUARE",
+    "input": "INPUT",
+    "print": "PRINT",
+    "moveUp": "MOVEUP",
+    "moveDown": "MOVEDOWN",
+    "moveRight": "MOVERIGHT",
+    "moveLeft": "MOVELEFT",
+    "angle": "ANGLE",
+    "color": "COLOR",
+    "circle": "CIRCLE",
+    "square": "SQUARE",
     "clean": "CLEAN",
     "draw": "DRAW",
-    "_startPosition": "STARTPOSITION",
-    "_screenSizesX": "SCREENSIZESX",
-    "_screenSizesY": "SCREENSIZESY",
-    "_go": "GO",
-    "_fibonacci": "FIBONACCI",
-    "_factorial": "FACTORIAL",
-    "_sleep": "SLEEP",
+    "startPosition": "STARTPOSITION",
+    "screenSizesX": "SCREENSIZESX",
+    "screenSizesY": "SCREENSIZESY",
+    "go": "GO",
+    "fibonacci": "FIBONACCI",
+    "factorial": "FACTORIAL",
+    "sleep": "SLEEP",
 
     "and": "AND",
     "or": "OR",
@@ -52,13 +52,12 @@ reserved = {
 
 # Token declaration
 tokens = [
-             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'SEMICOLON', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
+             'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
              'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
              'ARROW', 'ARRAY', 'MATRIX'
          ] + list(reserved.values())
 
 t_EQUAL = r'\='
-t_SEMICOLON = r'\;'
 t_COLON = r'\:'
 t_COMMA = r'\,'
 t_OPEN_BRACKET = r'\['
