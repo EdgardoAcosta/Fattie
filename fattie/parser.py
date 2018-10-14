@@ -21,6 +21,8 @@ var_builder = Builder(FluffyVariable)
 def p_program(p):
     '''program : empty_spaces program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
+    # chubby.print_all()
+    # chubby.print_function_table()
 
 
 def p_empty_spaces(p):
@@ -36,11 +38,12 @@ def p_program_vars(p):
 def p_n_program_vars(p):
     '''n_program_vars : '''
     try:
-        for var in more_variable:
-            chubby.add_global_variable(var)
-            more_variable.clear()
+        global more_variable
+        for j in more_variable:
+            chubby.add_global_variable(j)
+        more_variable.clear()
     except BigError as e:
-        e.print(p.lineneo(1))
+        e.print(p.lineno(1))
 
 
 def p_program_functions(p):
@@ -55,8 +58,6 @@ def p_program_functions(p):
 def p_main(p):
     '''main : MAIN ARROW NEW_LINE n_main block '''
 
-
-#
 
 def p_n_main(p):
     '''n_main : '''
@@ -100,11 +101,12 @@ def p_sub_block_body(p):
 def p_block_variable(p):
     '''block_variable : variable'''
     try:
+        global more_variable
         for var in more_variable:
             chubby.add_local_variable(var)
-            more_variable.clear()
+        more_variable.clear()
     except BigError as e:
-        e.print(p.lineneo(1))
+        e.print(p.lineno(1))
 
 
 def p_statement(p):
@@ -224,10 +226,11 @@ def p_save_type(p):
 
 
 def p_more_variables(p):
-    '''more_variables : more_variables ID variable_array COMMA
+    '''more_variables : more_variables COMMA ID variable_array
                       | empty'''
+
     if len(p) > 2:
-        var_builder.put('id_var', p[2])
+        var_builder.put('id_var', p[3])
         more_variable.append(var_builder.build())
 
 
@@ -235,6 +238,7 @@ def p_variable_array(p):
     '''variable_array : ARRAY
                       | MATRIX
                       | empty'''
+    p[0] = p[1]
 
 
 # </editor-fold>
@@ -242,20 +246,26 @@ def p_variable_array(p):
 
 # <editor-fold desc="Function">
 def p_function(p):
-    '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW NEW_LINE n_function block'''
+    '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW n_function NEW_LINE block'''
 
     fn_builder.clear()
+    chubby.clean_variables_from_function()
 
 
 def p_n_function(p):
     '''n_function : '''
 
     try:
+
+        global function_param
+
         var = fn_builder.build()
         chubby.add_function(var)
-        function_param.clear()
+
+        function_param = []
+
     except BigError as e:
-        e.print(p.lineneo(1))
+        e.print(p.lineno(-1))
 
 
 def p_function_id(p):
@@ -267,6 +277,7 @@ def p_function_id(p):
 def p_function_params(p):
     '''function_params : more_params param
                        | empty'''
+
     fn_builder.put('params', function_param)
 
 

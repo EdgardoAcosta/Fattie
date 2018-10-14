@@ -8,13 +8,16 @@ class Cube:
         self.cube = {}
 
     def set_cube(self, op, value_l, value_r, result):
-
         if op not in self.cube:
             self.cube[op] = dict()
         if value_l not in self.cube[op]:
             self.cube[op][value_l] = dict()
 
         self.cube[op][value_l][value_r] = result
+
+    # For test proposes only
+    def print(self):
+        print(self.cube)
 
 
 # Create semantic cube
@@ -72,11 +75,9 @@ cube.set_cube(Operator.EQUAL, Types.FLOAT, Types.FLOAT, Types.FLOAT)
 cube.set_cube(Operator.EQUAL, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN)
 cube.set_cube(Operator.EQUAL, Types.CHAR, Types.CHAR, Types.CHAR)
 
-
 # cube.set_cube(SpecialFunction.INPUT, Types.CHAR, Types.CHAR, Types.CHAR)
 
+cube.set_cube(SpecialFunction.MOVEUP, Types.INT, None, None)
+cube.set_cube(SpecialFunction.MOVEUP, Types.FLOAT, None, None)
 
-
-
-print(cube.__dict__)
-
+# cube.print()

@@ -7,7 +7,7 @@ class BigError(SyntaxError):
         self.err_name = 'Syntax error'
 
     def print(self, lineno):
-        print('{} at line \{}\: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
+        print('{} at line -> {} <-: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
 
     @staticmethod
     def undefined_variable(msg):

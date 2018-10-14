@@ -8,3 +8,10 @@ class HeavyFunction:
         self.id_function = id_function
         self.return_type = return_type
         self.params = params
+
+    def parse(self):
+        return ({
+            "id_function": self.id_function,
+            "return_type ": self.return_type,
+            "params ": self.params
+        })
