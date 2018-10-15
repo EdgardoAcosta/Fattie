@@ -6,22 +6,10 @@ class FluffyVariable:
         self.type_var = type_var
         self.addr = None
 
-# test = {
-#            "main": {
-#                "test_var": {
-#                    "value": 12,
-#                    "type": "Int"
-#                },
-#                "test_var2": {
-#                    "value": 'Hola',
-#                    "type": "String"
-#                }
-#            },
-#            "fun1": {
-#                "test_var3": {
-#                    "value": 'adios',
-#                    "type": "String"
-#                }
-#            }
-#
-#        }
+    # For test proposes only
+    def parse(self):
+        return({
+            "id_var": self.id_var,
+            "type_var ": self.type_var,
+            "addr ": self.addr
+        })

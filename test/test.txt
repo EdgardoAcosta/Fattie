@@ -1,6 +1,9 @@
-var Char: test8
+var Char: test8, test6
 fun fun1(Int: parm1):Int=>
-		var Char: test1
+		var Char: test1,variableTest
+
+fun fun1(Int: parm3, Int: parm5):Int=>
+		var Char: test1,variableTest
 
 main =>
-		var Boolean : test0
+		var Char : test0, test4, test10

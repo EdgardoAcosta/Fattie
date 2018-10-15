@@ -16,6 +16,10 @@ class Chubby:
         self._global_variable[instance.id_var] = instance
 
     def add_local_variable(self, instance):
+
+        if instance.id_var in self._global_variable:
+            raise BigError.redefined_variable(instance.id_var)
+
         if instance.id_var in self._local_variable:
             raise BigError.redefined_variable(instance.id_var)
 
@@ -30,10 +34,12 @@ class Chubby:
         else:
             raise BigError.undefined_variable('Variable not defined ')
 
+    def clean_variables_from_function(self):
+        self._local_variable.clear()
+
     def add_function(self, instance):
         if instance.id_function in self._functions:
-            raise BigError.redefined_funtion('Function \{}\ already defined'.format(instance.id_function))
-
+            raise BigError.redefined_funtion(' This one -> {} <- '.format(instance.id_function))
         self._functions[instance.id_function] = instance
 
     def find_function(self, id_fun):
@@ -41,3 +47,32 @@ class Chubby:
             raise BigError.undefined_function(id_fun)
 
         return self._functions[id_fun]
+
+    # For test proposes only
+    def print_global_variables(self):
+        print("\nGlobal variables \n")
+        for key, value in self._global_variable.items():
+            print("{} : {}".format(key, value.parse()))
+
+    def print_local_variables(self):
+        print("\nLocal variables \n")
+        for key, value in self._local_variable.items():
+            print("{} : {}".format(key, value.parse()))
+
+    def print_function_table(self):
+        print("\nFunction table \n")
+        for key, value in self._functions.items():
+            print("{} : {}".format(key, value.parse()))
+
+    def print_all(self):
+        print("\nGlobal variables \n")
+        for key, value in self._global_variable.items():
+            print("{} : {}".format(key, value.parse()))
+
+        print("\nLocal variables \n")
+        for key, value in self._local_variable.items():
+            print("{} : {}".format(key, value.parse()))
+
+        print("\nFunction table \n")
+        for key, value in self._functions.items():
+            print("{} : {}".format(key, value.parse()))
