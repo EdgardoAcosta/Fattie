@@ -22,25 +22,25 @@ class Operator(IntEnum):
 
 
 class SpecialFunction(IntEnum):
-    INPUT = 1
-    PRINT = 2
-    MOVEUP = 3
-    MOVEDOWN = 4
-    MOVERIGHT = 5
-    MOVELEFT = 6
-    ANGLE = 7
-    COLOR = 8
-    CIRCLE = 9
-    SQUARE = 10
-    CLEAN = 11
-    DRAW = 12
-    STARTPOSITION = 13
-    SCREENSIZESX = 14
-    SCREENSIZESY = 15
-    GO = 16
-    FIBONACCI = 17
-    FACTORIAL = 18
-    SLEEP = 19
+    INPUT = 101
+    PRINT = 102
+    MOVEUP = 103
+    MOVEDOWN = 104
+    MOVERIGHT = 105
+    MOVELEFT = 106
+    ANGLE = 107
+    COLOR = 108
+    CIRCLE = 109
+    SQUARE = 110
+    CLEAN = 111
+    DRAW = 112
+    STARTPOSITION = 113
+    SCREENSIZESX = 114
+    SCREENSIZESY = 115
+    GO = 116
+    FIBONACCI = 117
+    FACTORIAL = 118
+    SLEEP = 119
 
 
 class QuadruplePack:
