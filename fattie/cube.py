@@ -1,5 +1,6 @@
 from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.types import Types
+from fattie.belly.exceptions import BigError
 
 
 class Cube:
@@ -15,6 +16,20 @@ class Cube:
             self.cube[op][value_l] = dict()
 
         self.cube[op][value_l][value_r] = result
+
+    def compare_types(self, oper, value_l, value_r):
+
+        if oper in self.cube:
+            if value_l in self.cube[oper]:
+                if self.cube[value_r][value_r]:
+                    return self.cube[value_r][value_r]
+
+        return False
+        #         BigError.mismatch_operator("{} -> {} -> {}".format(value_l, value_r, resultType))
+        #
+        # else:
+        #     BigError.invalid_operator("{}".format(value_l))
+
 
     # For test proposes only
     def print(self):
@@ -132,4 +147,4 @@ cube.set_cube(SpecialFunction.FACTORIAL, Types.INT, None, None)
 # Sleep sleep de funcition N miliseconds
 cube.set_cube(SpecialFunction.SLEEP, Types.INT, None, None)
 
-print(cube.__dict__)
+# cube.print()

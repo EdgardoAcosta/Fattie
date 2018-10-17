@@ -1,6 +1,10 @@
 from fattie.belly.fluffyvariable import FluffyVariable
 from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.exceptions import BigError
+from fattie.belly.quadruple import Operator
+from fattie.cube import Cube
+
+cube = Cube()
 
 
 class Chubby:
@@ -10,6 +14,10 @@ class Chubby:
         self._local_variable = {}
         self._functions = {}
 
+        self._operand = []
+        self._operator = []
+
+    # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
         if instance.id_var in self._global_variable:
             raise BigError.redefined_variable(instance.id_var)
@@ -32,7 +40,7 @@ class Chubby:
         elif id_var in self._global_variable:
             return self._global_variable.get(id_var)
         else:
-            raise BigError.undefined_variable('Variable not defined ')
+            raise BigError.undefined_variable('{}'.format(id_var))
 
     def clean_variables_from_function(self):
         self._local_variable.clear()
@@ -76,3 +84,29 @@ class Chubby:
         print("\nFunction table \n")
         for key, value in self._functions.items():
             print("{} : {}".format(key, value.parse()))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Arithmetical expressions">
+    def add_operand(self, operand):
+        self._operand.append(operand)
+
+    def add_operator(self, operator):
+        self._operator.append(operator)
+
+    def check_top(self, operator):
+        if operator in [Operator.PLUS, Operator.MINUS]:
+            r_operand = self._operator.pop()
+            r_type = r_operand['type_var']
+            l_operand = self._operator.pop()
+            l_type = l_operand['type_var']
+            oper = self._operand.pop()
+
+        else:
+            pass
+
+        check_types = Cube.compare_types(oper, l_type, r_type)
+        if not check_types:
+            BigError.mismatch_operator("{} {} {} ".format(l_type, oper, r_type))
+
+    # </editor-fold>

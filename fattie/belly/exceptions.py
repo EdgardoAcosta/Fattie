@@ -32,3 +32,15 @@ class BigError(SyntaxError):
         err = BigError(msg)
         err.err_name = 'Redefined variable'
         return err
+
+    @staticmethod
+    def mismatch_operator(msg):
+        err = BigError(msg)
+        err.err_name = 'Mismatch operator'
+        return err
+
+    @staticmethod
+    def invalid_operator(msg):
+        err = BigError(msg)
+        err.err_name = 'Invalid operator'
+        return err

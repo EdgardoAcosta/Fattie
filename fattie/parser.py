@@ -6,6 +6,7 @@ from fattie.belly.fluffyvariable import FluffyVariable
 from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.builder import Builder
 from fattie.belly.exceptions import BigError
+from fattie.belly.quadruple import Operator
 
 from fattie import cube
 
@@ -43,7 +44,7 @@ def p_n_program_vars(p):
             chubby.add_global_variable(j)
         more_variable.clear()
     except BigError as e:
-        e.print(p.lineno(1))
+        e.print(p.lineno(-1))
 
 
 def p_program_functions(p):
@@ -148,7 +149,12 @@ def p_for(p):
 
 
 def p_assignation(p):
-    '''assignation :  ID array_assignation EQUAL expression NEW_LINE'''
+    '''assignation :  ID var_cte_id array_assignation EQUAL n_equals expression NEW_LINE'''
+
+
+def p_n_equals(p):
+    '''n_equals : '''
+    chubby.add_operator(Operator.EQUAL)
 
 
 def p_array_assignation(p):
@@ -186,23 +192,54 @@ def p_comparison(p):
 
 
 def p_term(p):
-    '''term : factor term_factor '''
+    '''term : factor n_factor term_factor '''
 
+
+def p_n_factor(p):
+    '''n_factor : '''
+    chubby.
 
 def p_operator(p):
-    '''operator : sign exp
+    '''operator : sign n_operator exp
                 | empty'''
 
 
+def p_n_operator(p):
+    '''n_operator : '''
+
+    if not p[-1] is None:
+        if p[-1] is "+":
+            chubby.add_operator(Operator.PLUS)
+        else:
+            chubby.add_operator(Operator.MINUS)
+
+
 def p_factor(p):
-    '''factor : sign OPEN_PAREN expression CLOSE_PAREN
-              | sign var_cte'''
+    '''factor : sign n_factor_unary sub_factor '''
+
+
+def p_sub_factor(p):
+    '''sub_factor : OPEN_PAREN expression CLOSE_PAREN
+                  | var_cte'''
+
+
+def p_n_factor_unary(p):
+    '''n_factor_unary : '''
+
+    if p[-1] is "-":
+        chubby.add_operator(Operator.UMINUS)
 
 
 def p_term_factor(p):
     '''term_factor : TIMES term
                    | DIVIDE term
                    | empty'''
+
+    if not p[1] is None:
+        if p[1] is "*":
+            chubby.add_operator(Operator.TIMES)
+        else:
+            chubby.add_operator(Operator.DIVIDE)
 
 
 # </editor-fold>
@@ -425,11 +462,12 @@ def p_sleep(p):
 def p_sign(p):
     '''sign : PLUS
             | MINUS'''
+
     p[0] = p[1]
 
 
 def p_var_cte(p):
-    '''var_cte : ID sub_var_cte
+    '''var_cte : ID n_var_cte_id sub_var_cte
                | function_call
                | CTEI
                | CTEF
@@ -437,6 +475,16 @@ def p_var_cte(p):
                | screen_sizes_x
                | screen_sizes_y'''
     # p[0] = p[1]
+
+
+def p_n_var_cte_id(p):
+    '''var_cte_id : '''
+    try:
+        var = chubby.find_variable(p[-1])
+        chubby.add_operand(var)
+    except BigError as e:
+        e.print(p.lineno(-1))
+        raise e
 
 
 def p_sub_var_cte(p):
@@ -459,7 +507,8 @@ def p_empty(p):
 
 
 def p_error(p):
-    print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
+    if not isinstance(p, BigError):
+        print("Unexpected {} at line {}".format(p.value, p.lexer.lineno))
 
 
 # </editor-fold>

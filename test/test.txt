@@ -2,7 +2,7 @@ var Char: test8, test6
 fun fun1(Int: parm1):Int=>
 		var Char: test1,variableTest
 
-fun fun1(Int: parm3, Int: parm5):Int=>
+fun fun2(Int: parm3, Int: parm5):Int=>
 		var Char: test1,variableTest
 
 main =>
