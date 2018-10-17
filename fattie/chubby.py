@@ -3,6 +3,7 @@ from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.exceptions import BigError
 from fattie.belly.quadruple import Operator
 from fattie.cube import Cube
+from fattie.belly.quadruple import QuadruplePack, QuadrupleStack
 
 cube = Cube()
 
@@ -16,6 +17,7 @@ class Chubby:
 
         self._operand = []
         self._operator = []
+        self.quadruple = QuadrupleStack()
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
@@ -94,19 +96,28 @@ class Chubby:
     def add_operator(self, operator):
         self._operator.append(operator)
 
-    def check_top(self, operator):
-        if operator in [Operator.PLUS, Operator.MINUS]:
+    def _top_operator(self):
+        return self._operator[-1]
+
+    def _top_operand(self):
+        return self._operand[-1]
+
+    def check_top(self):
+        if self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
             r_operand = self._operator.pop()
             r_type = r_operand['type_var']
             l_operand = self._operator.pop()
             l_type = l_operand['type_var']
             oper = self._operand.pop()
 
-        else:
-            pass
+            check_types = Cube.compare_types(oper, l_type, r_type)
+            if check_types:
+                # TODO: Check what is result
+                result = ""  # AVAIL.next()
+                quadruple = QuadruplePack(oper, l_operand, r_operand, result)
+                self.quadruple.add(quadruple)
 
-        check_types = Cube.compare_types(oper, l_type, r_type)
-        if not check_types:
-            BigError.mismatch_operator("{} {} {} ".format(l_type, oper, r_type))
+            else:
+                BigError.mismatch_operator("{} {} {} ".format(l_type, oper, r_type))
 
     # </editor-fold>

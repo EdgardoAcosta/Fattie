@@ -195,14 +195,22 @@ def p_term(p):
     '''term : factor n_factor term_factor '''
 
 
+# Number 5
 def p_n_factor(p):
     '''n_factor : '''
-    chubby.
+    try:
+        chubby.check_top()
+    except BigError as e:
+        e.print(p.lineno(-1))
+
 
 def p_operator(p):
     '''operator : sign n_operator exp
                 | empty'''
-
+    try:
+        chubby.check_top()
+    except BigError as e:
+        e.print(p.lineno(1))
 
 def p_n_operator(p):
     '''n_operator : '''

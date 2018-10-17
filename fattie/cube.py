@@ -30,7 +30,6 @@ class Cube:
         # else:
         #     BigError.invalid_operator("{}".format(value_l))
 
-
     # For test proposes only
     def print(self):
         print(self.cube)

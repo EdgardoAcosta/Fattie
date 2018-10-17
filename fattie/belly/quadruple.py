@@ -11,7 +11,6 @@ class Operator(IntEnum):
     GREATER = 7
     NOTEQUAL = 8
 
-
     AND = 9
     OR = 10
     NOT = 11
@@ -26,6 +25,7 @@ class Operator(IntEnum):
     GOSUB = 21
 
     UMINUS = 22
+
 
 class SpecialFunction(IntEnum):
     INPUT = 101
