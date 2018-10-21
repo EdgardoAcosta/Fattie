@@ -103,6 +103,8 @@ class Chubby:
         return self._operand[-1]
 
     def check_top(self):
+        print("QUADRUPLe")
+
         if self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
             r_operand = self._operator.pop()
             r_type = r_operand['type_var']

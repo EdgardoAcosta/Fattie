@@ -92,6 +92,7 @@ def p_block_body(p):
                   | empty'''
     pass
 
+
 def p_sub_block_body(p):
     '''sub_block_body : statement
                       | block_variable'''
@@ -148,7 +149,7 @@ def p_for(p):
 
 
 def p_assignation(p):
-    '''assignation :  ID var_cte_id array_assignation EQUAL n_equals expression NEW_LINE'''
+    '''assignation :  ID n_var_cte_id array_assignation EQUAL n_equals expression NEW_LINE'''
 
 
 def p_n_equals(p):
@@ -210,6 +211,7 @@ def p_operator(p):
         chubby.check_top()
     except BigError as e:
         e.print(p.lineno(1))
+
 
 def p_n_operator(p):
     '''n_operator : '''
@@ -485,7 +487,7 @@ def p_var_cte(p):
 
 
 def p_n_var_cte_id(p):
-    '''var_cte_id : '''
+    '''n_var_cte_id : '''
     try:
         var = chubby.find_variable(p[-1])
         chubby.add_operand(var)
