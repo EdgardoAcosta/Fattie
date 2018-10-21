@@ -92,7 +92,6 @@ def p_block_body(p):
                   | empty'''
     pass
 
-
 def p_sub_block_body(p):
     '''sub_block_body : statement
                       | block_variable'''
