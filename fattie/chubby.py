@@ -17,7 +17,10 @@ class Chubby:
 
         self._operand = []
         self._operator = []
+        self._constants = {}
         self.quadruple = QuadrupleStack()
+
+        self._next_const_addr = 500000
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
@@ -103,16 +106,18 @@ class Chubby:
         return self._operand[-1]
 
     def check_top(self):
-        print("QUADRUPLe")
 
         if self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
-            r_operand = self._operator.pop()
-            r_type = r_operand['type_var']
-            l_operand = self._operator.pop()
-            l_type = l_operand['type_var']
-            oper = self._operand.pop()
+            r_operand = self._operand.pop()
+            r_type = r_operand.type_var
+            l_operand = self._operand.pop()
 
-            check_types = Cube.compare_types(oper, l_type, r_type)
+            l_type = l_operand.type_var
+            oper = self._operator.pop()
+
+            check_types = cube.compare_types(oper, l_type, r_type)
+            print("{} {} {} ".format(l_type, oper, r_type))
+
             if check_types:
                 # TODO: Check what is result
                 result = ""  # AVAIL.next()
@@ -120,6 +125,21 @@ class Chubby:
                 self.quadruple.add(quadruple)
 
             else:
-                BigError.mismatch_operator("{} {} {} ".format(l_type, oper, r_type))
+                raise BigError.mismatch_operator("{} {} {} ".format(l_type, oper.name, r_type))
 
     # </editor-fold>
+
+    def add_constants(self, value):
+        if value not in self._constants:
+            self._constants[value] = self._next_const_addr
+            self._next_const_addr += 1
+
+            quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, value), r_value=None,
+                                      result=FluffyVariable(None, None, self._constants[value]))
+            self.quadruple.add(quadruple)
+
+        return self._constants[value]
+
+    @staticmethod
+    def print_test(value=""):
+        print("ENTRO {}".format(value))

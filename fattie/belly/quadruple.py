@@ -26,6 +26,8 @@ class Operator(IntEnum):
 
     UMINUS = 22
 
+    CONST = 23
+
 
 class SpecialFunction(IntEnum):
     INPUT = 101

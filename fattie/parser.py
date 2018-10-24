@@ -22,7 +22,7 @@ var_builder = Builder(FluffyVariable)
 def p_program(p):
     '''program : empty_spaces program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    # chubby.print_all()
+    chubby.print_all()
     # chubby.print_function_table()
 
 
@@ -119,8 +119,6 @@ def p_statement(p):
                  | function_call
                  | RETURN expression NEW_LINE'''
 
-    pass
-
 
 # </editor-fold>
 
@@ -149,16 +147,18 @@ def p_for(p):
 
 
 def p_assignation(p):
-    '''assignation :  ID n_var_cte_id array_assignation EQUAL n_equals expression NEW_LINE'''
+    '''assignation : ID n_var_cte_id array_assignation EQUAL n_equal expression NEW_LINE'''
 
 
-def p_n_equals(p):
-    '''n_equals : '''
+def p_n_equal(p):
+    '''n_equal : '''
     chubby.add_operator(Operator.EQUAL)
 
 
+# Array and Matrix value assignation
 def p_array_assignation(p):
     '''array_assignation : OPEN_BRACKET expression CLOSE_BRACKET
+                         | OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
                          | empty '''
 
 
@@ -224,7 +224,12 @@ def p_n_operator(p):
 
 
 def p_factor(p):
-    '''factor : sign n_factor_unary sub_factor '''
+    '''factor : unary n_factor_unary sub_factor '''
+
+
+def p_unary(p):
+    '''unary : sign
+             | empty'''
 
 
 def p_sub_factor(p):
@@ -478,12 +483,23 @@ def p_sign(p):
 def p_var_cte(p):
     '''var_cte : ID n_var_cte_id sub_var_cte
                | function_call
-               | CTEI
-               | CTEF
-               | CTEC
+               | constant
                | screen_sizes_x
                | screen_sizes_y'''
     # p[0] = p[1]
+
+
+def p_constants(p):
+    '''constant : CTEI
+                | CTEF
+                | CTEC
+                | empty'''
+    if p[1] is not None:
+        # TODO: Guardar la variable
+
+
+
+        pass
 
 
 def p_n_var_cte_id(p):
