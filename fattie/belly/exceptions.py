@@ -40,6 +40,12 @@ class BigError(SyntaxError):
         return err
 
     @staticmethod
+    def mismatch_assignation(msg):
+        err = BigError(msg)
+        err.err_name = 'Mismatch assignation'
+        return err
+
+    @staticmethod
     def invalid_operator(msg):
         err = BigError(msg)
         err.err_name = 'Invalid operator'

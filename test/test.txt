@@ -7,5 +7,6 @@ fun fun2(Int: parm3, Int: parm5):Int=>
 
 main =>
 		var Char : test0, test4, test10
+		var Int : test11
 
-		test0 = test4 + test10
+		test11 = test4 + (test10 + test0)

@@ -59,6 +59,16 @@ class QuadruplePack:
         self.r_value = r_value
         self.result = result
 
+    # For test proposes only
+
+    def parse(self):
+        return {
+            "operator": self.operator.name,
+            "l_value": self.l_value.parse() if self.l_value is not None else self.l_value,
+            "r_value": self.r_value.parse() if self.r_value is not None else self.r_value,
+            "result": self.result.parse() if self.result is not None else self.result
+        }
+
 
 # Structure to manage quadruples stack
 class QuadrupleStack:
@@ -74,5 +84,7 @@ class QuadrupleStack:
         self.stack.pop()
         self.index -= 1
 
+    # For test proposes only
     def print(self):
-        print(self.stack)
+        for value in self.stack:
+            print(value.parse())

@@ -7,6 +7,7 @@ from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.builder import Builder
 from fattie.belly.exceptions import BigError
 from fattie.belly.quadruple import Operator
+from fattie.belly.types import Types
 
 from fattie import cube
 
@@ -23,7 +24,6 @@ def p_program(p):
     '''program : empty_spaces program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
     chubby.print_all()
-    # chubby.print_function_table()
 
 
 def p_empty_spaces(p):
@@ -147,7 +147,11 @@ def p_for(p):
 
 
 def p_assignation(p):
-    '''assignation : ID n_var_cte_id array_assignation EQUAL n_equal expression NEW_LINE'''
+    '''assignation : ID n_var_cte_id array_assignation EQUAL n_equal expression'''
+    try:
+        chubby.create_assignation()
+    except BigError as e:
+        e.print(p.lineno(1))
 
 
 def p_n_equal(p):
@@ -273,7 +277,11 @@ def p_var_id(p):
 
 def p_save_type(p):
     '''save_type : '''
-    var_builder.put('type_var', p[-1])
+    try:
+        value = Types[p[-1].upper()]
+        var_builder.put('type_var', value)
+    except KeyError as e:
+        raise BigError("{} is not a valid type".format(p[-1]))
 
 
 def p_more_variables(p):
@@ -495,11 +503,8 @@ def p_constants(p):
                 | CTEC
                 | empty'''
     if p[1] is not None:
-        # TODO: Guardar la variable
-
-
-
-        pass
+        chubby.add_constants(p[1])
+    pass
 
 
 def p_n_var_cte_id(p):
