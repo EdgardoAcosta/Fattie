@@ -143,7 +143,7 @@ def p_while(p):
 
 def p_n_while(p):
     '''n_while : '''
-    chubby.update_jump_while()
+    chubby.jump_false()
 
 
 def p_n_while_exp(p):
@@ -152,6 +152,7 @@ def p_n_while_exp(p):
         chubby.evaluate_exp_while()
     except BigError as e:
         e.print(p.lineno(-1))
+
 
 def p_n_while_fill(p):
     '''n_while_fill : '''
@@ -190,7 +191,7 @@ def p_if(p):
 def p_n_if(p):
     '''n_if : '''
     try:
-        chubby.evaluate_exp_if()
+        chubby.jump_false()
     except BigError as e:
         e.print(p.lineno(-1))
 

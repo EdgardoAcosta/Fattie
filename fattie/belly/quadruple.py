@@ -84,6 +84,9 @@ class QuadrupleStack:
         self.stack.pop()
         self.index -= 1
 
+    def fill(self, position, value):
+        self.stack[position] = value
+
     # For test proposes only
     def print(self):
         for value in self.stack:

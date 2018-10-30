@@ -129,19 +129,10 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="IF conditional">
-    def evaluate_exp_if(self):
-        result = self._operand.pop()
-        if result.type_var != Types.BOOLEAN:
-            raise BigError.mismatch_operator("The operation doesn't return a boolean value")
-
-        # Generate GotoFalse, return to fill the address
-        self.quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
-        self._jumps.append(self._cont - 1)
-
     def fill_jumps_if(self):
         end = self._jumps.pop()
         # TODO: Create function Fill
-        # Fill(end, self._cont)
+        self._fill(end, self._cont)
 
     def generate_goto_if(self):
         false = self._jumps.pop()
@@ -151,25 +142,37 @@ class Chubby:
 
     # </editor-fold>
 
+    # <editor-fold desc="WHILE condition">
     def update_jump_while(self):
         # Check if cont + 1 or cont
         self._jumps.append(self._cont)
-
-    def evaluate_exp_while(self):
-        result = self._operand.pop()
-        if result.type_var != Types.BOOLEAN:
-            raise BigError.mismatch_operator("The operation doesn't return a boolean value")
-
-        # Generate GotoFalse, return to fill the address
-        self.quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
-        self._jumps.append(self._cont - 1)
 
     def fill_jumps_while(self):
         end = self._jumps.pop()
         retn = self._jumps.pop()
         self.quadruple.add(QuadruplePack(Operator.GOTO, retn, None, None))
         # TODO: Create function Fill
-        # Fill(end, self._cont)
+        self._fill(end, self._cont)
+
+    # </editor-fold>
+
+    def jump_false(self):
+        self._jumps.append(self.quadruple.index)
+        result = self._operand.pop()
+        if result.type_var != Types.BOOLEAN:
+            raise BigError.mismatch_operator("The operation doesn't return a boolean value")
+
+        # Generate GotoFalse, return to fill the address
+        self.quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
+        # self._jumps.append(self._cont - 1)
+
+    def _fill(self, position, cont):
+        actual_quadruple = self._jumps.pop()
+        if actual_quadruple is None:
+            raise BigError("Error, pending quadruples")
+        available_quadruple = self.quadruple.index
+        address = FluffyVariable(None, None, addr=available_quadruple)
+        self.quadruple.fill(available_quadruple, address)
 
     # <editor-fold desc="Constants">
     def add_constants(self, value):
