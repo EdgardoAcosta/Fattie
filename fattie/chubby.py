@@ -1,9 +1,10 @@
-from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
-from fattie.belly.heavyfunction import HeavyFunction
-from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import Operator
 from fattie.cube import Cube
+from fattie.belly.types import Types
+from fattie.belly.quadruple import Operator
+from fattie.belly.exceptions import BigError
+from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.quadruple import QuadruplePack, QuadrupleStack
+from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
 
 cube = Cube()
 cube.insert_values()
@@ -21,6 +22,8 @@ class Chubby:
         self._operator = []
         self._constants = {}
         self.quadruple = QuadrupleStack()
+        self._jumps = []
+        self._cont = 0
 
         self._next_const_addr = 500000
 
@@ -112,8 +115,8 @@ class Chubby:
         if variable is None or expression is None:
             raise BigError('None Value to assign')
 
-        comparation = cube.compare_types(Operator.EQUAL, expression.type_var, variable.type_var)
-        if comparation:
+        comparison = cube.compare_types(Operator.EQUAL, expression.type_var, variable.type_var)
+        if comparison:
             q = QuadruplePack(Operator.EQUAL, expression, None, variable)
             self.quadruple.add(q)
 
@@ -124,6 +127,49 @@ class Chubby:
                     variable.type_var.name))
 
     # </editor-fold>
+
+    # <editor-fold desc="IF conditional">
+    def evaluate_exp_if(self):
+        result = self._operand.pop()
+        if result.type_var != Types.BOOLEAN:
+            raise BigError.mismatch_operator("The operation doesn't return a boolean value")
+
+        # Generate GotoFalse, return to fill the address
+        self.quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
+        self._jumps.append(self._cont - 1)
+
+    def fill_jumps_if(self):
+        end = self._jumps.pop()
+        # TODO: Create function Fill
+        # Fill(end, self._cont)
+
+    def generate_goto_if(self):
+        false = self._jumps.pop()
+        self._jumps.append(self._cont - 1)
+        # TODO: Create function Fill
+        # Fill(false, self._cont)
+
+    # </editor-fold>
+
+    def update_jump_while(self):
+        # Check if cont + 1 or cont
+        self._jumps.append(self._cont)
+
+    def evaluate_exp_while(self):
+        result = self._operand.pop()
+        if result.type_var != Types.BOOLEAN:
+            raise BigError.mismatch_operator("The operation doesn't return a boolean value")
+
+        # Generate GotoFalse, return to fill the address
+        self.quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
+        self._jumps.append(self._cont - 1)
+
+    def fill_jumps_while(self):
+        end = self._jumps.pop()
+        retn = self._jumps.pop()
+        self.quadruple.add(QuadruplePack(Operator.GOTO, retn, None, None))
+        # TODO: Create function Fill
+        # Fill(end, self._cont)
 
     # <editor-fold desc="Constants">
     def add_constants(self, value):

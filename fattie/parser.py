@@ -137,8 +137,25 @@ def p_sub_block_statement(p):
 
 
 def p_while(p):
-    '''while : WHILE expression ARROW NEW_LINE block_statement'''
+    '''while : WHILE n_while expression n_while_exp ARROW NEW_LINE block_statement n_while_fill'''
     pass
+
+
+def p_n_while(p):
+    '''n_while : '''
+    chubby.update_jump_while()
+
+
+def p_n_while_exp(p):
+    '''n_while_exp : '''
+    try:
+        chubby.evaluate_exp_while()
+    except BigError as e:
+        e.print(p.lineno(-1))
+
+def p_n_while_fill(p):
+    '''n_while_fill : '''
+    chubby.fill_jumps_while()
 
 
 def p_for(p):
@@ -167,12 +184,29 @@ def p_array_assignation(p):
 
 
 def p_if(p):
-    '''if : IF expression ARROW NEW_LINE block_statement optional_else'''
+    '''if : IF expression n_if ARROW NEW_LINE block_statement optional_else n_if_fill'''
+
+
+def p_n_if(p):
+    '''n_if : '''
+    try:
+        chubby.evaluate_exp_if()
+    except BigError as e:
+        e.print(p.lineno(-1))
+
+
+def p_n_if_fill(p):
+    '''n_if_fill : '''
+    chubby.fill_jumps_if()
 
 
 def p_optional_else(p):
-    '''optional_else :  ELSE  NEW_LINE  block_statement
+    '''optional_else :  ELSE  NEW_LINE  n_else block_statement
             | empty'''
+
+
+def p_n_else(p):
+    '''n_else : '''
 
 
 # </editor-fold>
