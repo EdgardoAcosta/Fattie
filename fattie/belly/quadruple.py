@@ -20,6 +20,16 @@ class Operator(IntEnum):
 
     EQUAL = 18
 
+    GOTO = 19
+    GOTOF = 20
+    GOSUB = 21
+
+    UMINUS = 22
+
+    CONST = 23
+
+    ERA = 24
+
 
 class SpecialFunction(IntEnum):
     INPUT = 101
@@ -43,6 +53,43 @@ class SpecialFunction(IntEnum):
     SLEEP = 119
 
 
+# Structures for quadruples
 class QuadruplePack:
+    def __init__(self, operation, l_value=None, r_value=None, result=None):
+        self.operator = operation
+        self.l_value = l_value
+        self.r_value = r_value
+        self.result = result
+
+    # For test proposes only
+
+    def parse(self):
+        return {
+            "operator": self.operator.name,
+            "l_value": self.l_value.parse() if self.l_value is not None else self.l_value,
+            "r_value": self.r_value.parse() if self.r_value is not None else self.r_value,
+            "result": self.result.parse() if self.result is not None else self.result
+        }
+
+
+# Structure to manage quadruples stack
+class QuadrupleStack:
     def __init__(self):
-        pass
+        self.stack = []
+        self.index = 0
+
+    def add(self, quadruple):
+        self.stack.append(quadruple)
+        self.index += 1
+
+    def delete(self):
+        self.stack.pop()
+        self.index -= 1
+
+    def fill(self, position, value):
+        self.stack[position].result = value
+
+    # For test proposes only
+    def print(self):
+        for value in self.stack:
+            print(value.parse())

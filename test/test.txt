@@ -1,9 +1,16 @@
 var Char: test8, test6
 fun fun1(Int: parm1):Int=>
 		var Char: test1,variableTest
-
-fun fun1(Int: parm3, Int: parm5):Int=>
+fun fun2(Int: parm3, Int: parm5):Int=>
 		var Char: test1,variableTest
 
 main =>
 		var Char : test0, test4, test10
+		var Int : test11, test12
+		var Boolean : v1
+
+		test4 = test4 + (test10 + test0)
+
+		while v1 =>
+		    if v1 =>
+		        test11  = test11 + test11

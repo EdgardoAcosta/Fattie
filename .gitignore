@@ -6,6 +6,7 @@ out
 
 # Phyton
 *.out
+fattie/*.pyc
 
 # PLY
 fattie/parsetab.py
@@ -24,6 +25,7 @@ env.bak/
 # Test files
 test/*
 
+# Pycache
 fattie/__pycache__/
 fattie/core/__pycache__/
 fattie/belly/__pycache__/
