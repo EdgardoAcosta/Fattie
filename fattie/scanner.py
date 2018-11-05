@@ -9,8 +9,6 @@ reserved = {
     "if": "IF",
     "else": "ELSE",
     "while": "WHILE",
-    "for": "FOR",
-    "to": "TO",
 
     "input": "INPUT",
     "print": "PRINT",

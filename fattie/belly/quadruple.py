@@ -28,6 +28,8 @@ class Operator(IntEnum):
 
     CONST = 23
 
+    ERA = 24
+
 
 class SpecialFunction(IntEnum):
     INPUT = 101
@@ -85,7 +87,7 @@ class QuadrupleStack:
         self.index -= 1
 
     def fill(self, position, value):
-        self.stack[position] = value
+        self.stack[position].result = value
 
     # For test proposes only
     def print(self):

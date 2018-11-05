@@ -37,6 +37,6 @@ class FluffyVariable:
     def parse(self):
         return ({
             "id_var": self.id_var,
-            "type_var ": self.type_var.name,
-            "addr ": self.addr
+            "type_var": self.type_var.name if self.type_var is not None else '',
+            "addr ": self.addr if self.addr is not None else ''
         })
