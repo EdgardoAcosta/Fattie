@@ -13,5 +13,5 @@ class HeavyFunction:
         return ({
             "id_function": self.id_function,
             "return_type ": self.return_type,
-            "params ": self.params
+            "params ": [param.parse() for param in self.params]#self.params
         })

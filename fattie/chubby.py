@@ -148,7 +148,6 @@ class Chubby:
 
     # Fill jumps for if
     def fill_jumps_if(self):
-        print("FILL JUMPS IF")
         self._fill()
 
     # </editor-fold>

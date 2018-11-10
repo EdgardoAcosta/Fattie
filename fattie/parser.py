@@ -370,8 +370,10 @@ def p_function_params(p):
 
 
 def p_param(p):
-    '''param : type COLON ID '''
-    function_param.append({"id": p[3], "type": p[1]})
+    '''param : type save_type COLON ID '''
+    var_builder.put('id_var', p[4])
+    function_param.append(var_builder.build())
+    var_builder.clear()
 
 
 def p_more_params(p):
