@@ -31,6 +31,7 @@ class Operator(IntEnum):
     ERA = 24
     RETURN = 25
     ENDPROC = 26
+    END = 27
 
 
 class SpecialFunction(IntEnum):
@@ -93,5 +94,7 @@ class QuadrupleStack:
 
     # For test proposes only
     def print(self):
+        i = 0
         for value in self.stack:
-            print(value.parse())
+            print(str(i) + " ->", value.parse())
+            i += 1

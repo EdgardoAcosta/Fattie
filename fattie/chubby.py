@@ -61,8 +61,9 @@ class Chubby:
         self._local_variable.clear()
 
     def add_function(self, instance):
+
         if instance.id_function in self._functions:
-            raise BigError.redefined_funtion(' This one -> {} <- '.format(instance.id_function))
+            raise BigError.redefined_function(' This one -> {} <- '.format(instance.id_function))
         self._functions[instance.id_function] = instance
 
     def find_function(self, id_fun):
@@ -135,16 +136,13 @@ class Chubby:
     # <editor-fold desc="MAIN">
     # Generate GOTO MAIN
     def jump_main(self):
-        # Generate GotoFalse, return to fill the address
-        self.quadruple.add(QuadruplePack(Operator.GOTO, None, None))
-
-        # Fill Goto main
+        self._jump()
 
     def jump_fill_main(self):
-        # print("MAIN")
-        self._jumps.append(self.quadruple.index)
-        self.quadruple.add(QuadruplePack(Operator.ERA, None, None))
-        self._jumps.append(self.quadruple.index)
+        self._fill()
+
+    def end_main(self):
+        self.quadruple.add(QuadruplePack(Operator.END, None, None))
 
     # </editor-fold>
 
@@ -201,14 +199,19 @@ class Chubby:
 
         # self.print_quadruple()
 
+    def _jump(self):
+        self._jumps.append(self.quadruple.index)
+        self.quadruple.add(QuadruplePack(Operator.GOTO, None, None))
+
+    # Fill jumps
     def _fill(self):
         actual_quadruple = self._jumps.pop()
         if actual_quadruple is None:
             raise BigError("Error, pending quadruples")
-
-        available_quadruple = self.quadruple.index
-        address_quadruple = FluffyVariable(None, None, addr=available_quadruple)
-        self.quadruple.fill(actual_quadruple, address_quadruple)
+        else:
+            available_quadruple = self.quadruple.index
+            address_quadruple = FluffyVariable(None, None, addr=available_quadruple)
+            self.quadruple.fill(actual_quadruple, address_quadruple)
 
     # Make GOSUB
     def gosub(self):
@@ -232,6 +235,12 @@ class Chubby:
         return self._constants[value]
 
     # </editor-fold>
+
+    @staticmethod
+    # TODO: make this method
+    def reset_addr():
+        print("RESET")
+        address.reset_addr()
 
     def set_function_size(self):
         pass
@@ -263,7 +272,7 @@ class Chubby:
         for key, value in self._global_variable.items():
             print("{} : {}".format(key, value.parse()))
 
-        print("\nLocal variables \n")
+        print("\nLocal variables - Main \n")
         for key, value in self._local_variable.items():
             print("{} : {}".format(key, value.parse()))
 

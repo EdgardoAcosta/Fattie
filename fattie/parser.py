@@ -69,6 +69,7 @@ def p_program_functions(p):
 # <editor-fold desc="Main">
 def p_main(p):
     '''main : MAIN ARROW NEW_LINE n_main block'''
+    chubby.end_main()
 
 
 def p_n_main(p):
@@ -352,7 +353,9 @@ def p_function(p):
 
     fn_builder.clear()
     # Release var table for function (n_point =  7)
+    chubby.print_local_variables()
     chubby.clean_variables_from_function()
+    chubby.reset_addr()
 
 
 def p_n_function(p):
@@ -363,8 +366,17 @@ def p_n_function(p):
 
         fun = fn_builder.build()
         # chubby.set_active_function(fun.id_function)
+        # Add function to function table
         chubby.add_function(fun)
-        function_param = []
+        # Save params as a local variable of the function
+        try:
+            global more_variable
+            for var in more_variable:
+                chubby.add_local_variable(var)
+            more_variable.clear()
+            function_param = []
+        except BigError as e:
+            e.print(p.lineno(1))
 
     except BigError as e:
         e.print(p.lineno(-1))
@@ -386,6 +398,7 @@ def p_function_params(p):
 def p_param(p):
     '''param : type save_type COLON ID '''
     var_builder.put('id_var', p[4])
+    more_variable.append(var_builder.build())
     function_param.append(var_builder.build())
     var_builder.clear()
 

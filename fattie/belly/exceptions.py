@@ -22,7 +22,7 @@ class BigError(SyntaxError):
         return err
 
     @staticmethod
-    def redefined_funtion(msg):
+    def redefined_function(msg):
         err = BigError(msg)
         err.err_name = 'Redefined function'
         return err
