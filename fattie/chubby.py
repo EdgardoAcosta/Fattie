@@ -89,7 +89,7 @@ class Chubby:
 
     def check_top(self):
 
-        if self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
+        if len(self._operator)> 0 and self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
             r_operand = self._operand.pop()
             r_type = r_operand.type_var
             l_operand = self._operand.pop()
@@ -112,6 +112,11 @@ class Chubby:
 
             else:
                 raise BigError.mismatch_operator("{} {} {} ".format(l_type.name, oper.name, r_type.name))
+        else:
+            # TODO: Validate the boolean variables
+            # for i in self._operand:
+            #     print(i.parse())
+            pass
 
     def create_assignation(self):
         expression = self._operand.pop()
@@ -239,7 +244,6 @@ class Chubby:
     @staticmethod
     # TODO: make this method
     def reset_addr():
-        print("RESET")
         address.reset_addr()
 
     def set_function_size(self):
