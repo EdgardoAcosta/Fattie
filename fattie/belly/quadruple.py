@@ -29,6 +29,8 @@ class Operator(IntEnum):
     CONST = 23
 
     ERA = 24
+    RETURN = 25
+    ENDPROC = 26
 
 
 class SpecialFunction(IntEnum):

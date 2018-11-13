@@ -13,5 +13,14 @@ class HeavyFunction:
         return ({
             "id_function": self.id_function,
             "return_type ": self.return_type,
-            "params ": [param.parse() for param in self.params]#self.params
+            "params": [param.parse() for param in self.params]  # self.params
         })
+
+
+class ActiveFunction:
+
+    # Constructor
+    def __init__(self, _id=None, size=None, return_type=None):
+        self.id = _id
+        self.size = size
+        self.return_type = return_type

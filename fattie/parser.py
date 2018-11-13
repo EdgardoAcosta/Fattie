@@ -2,12 +2,12 @@ import sys
 import ply.yacc as yacc
 from fattie.chubby import Chubby
 from fattie.scanner import tokens
-from fattie.belly.fluffyvariable import FluffyVariable
-from fattie.belly.heavyfunction import HeavyFunction
-from fattie.belly.builder import Builder
-from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import Operator
 from fattie.belly.types import Types
+from fattie.belly.builder import Builder
+from fattie.belly.quadruple import Operator
+from fattie.belly.exceptions import BigError
+from fattie.belly.heavyfunction import HeavyFunction
+from fattie.belly.fluffyvariable import FluffyVariable
 
 from fattie import cube
 
@@ -82,6 +82,11 @@ def p_n_main(p):
 def p_function_call(p):
     '''function_call : ID OPEN_PAREN call_params CLOSE_PAREN NEW_LINE'''
 
+    try:
+        chubby.gosub()
+    except BigError as e:
+        e.print(p.lineno(2))
+
 
 def p_call_params(p):
     '''call_params : expression sub_expression
@@ -131,7 +136,16 @@ def p_statement(p):
                  | if
                  | special_fun NEW_LINE
                  | function_call
-                 | RETURN expression NEW_LINE'''
+                 | RETURN expression n_return NEW_LINE'''
+
+
+def p_n_return(p):
+    '''n_return : '''
+
+    try:
+        chubby.function_return()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 # </editor-fold>
@@ -337,6 +351,7 @@ def p_function(p):
     '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW n_function NEW_LINE block'''
 
     fn_builder.clear()
+    # Release var table for function (n_point =  7)
     chubby.clean_variables_from_function()
 
 
@@ -344,12 +359,11 @@ def p_n_function(p):
     '''n_function : '''
 
     try:
-
         global function_param
 
-        var = fn_builder.build()
-        chubby.add_function(var)
-
+        fun = fn_builder.build()
+        # chubby.set_active_function(fun.id_function)
+        chubby.add_function(fun)
         function_param = []
 
     except BigError as e:
@@ -389,6 +403,7 @@ def p_function_return_type(p):
     value_return = p[2]
     if p[1] is None:
         value_return = None
+
     fn_builder.put('return_type', value_return)
 
 

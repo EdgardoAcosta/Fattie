@@ -2,8 +2,8 @@ from fattie.cube import Cube
 from fattie.belly.types import Types
 from fattie.belly.quadruple import Operator
 from fattie.belly.exceptions import BigError
-from fattie.belly.heavyfunction import HeavyFunction
 from fattie.belly.quadruple import QuadruplePack, QuadrupleStack
+from fattie.belly.heavyfunction import HeavyFunction, ActiveFunction
 from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
 
 cube = Cube()
@@ -25,12 +25,16 @@ class Chubby:
         self._jumps = []
         self._cont = 0
 
+        self._era = []
+        self.active_function = ActiveFunction()
+
         self._next_const_addr = 500000
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
         if instance.id_var in self._global_variable:
             raise BigError.redefined_variable(instance.id_var)
+        instance.addr = address.set_addr(instance.type_var, True)
         self._global_variable[instance.id_var] = instance
 
     def add_local_variable(self, instance):
@@ -41,6 +45,7 @@ class Chubby:
         if instance.id_var in self._local_variable:
             raise BigError.redefined_variable(instance.id_var)
 
+        instance.addr = address.set_addr(instance.type_var)
         self._local_variable[instance.id_var] = instance
 
     def find_variable(self, id_var):
@@ -93,8 +98,7 @@ class Chubby:
             check_types = cube.compare_types(oper, l_type, r_type)
 
             if check_types:
-                val_result = address.get_addr(check_types)
-                address.update_addr(check_types)
+                val_result = address.set_addr(check_types)
 
                 result = FluffyVariable(None, check_types, val_result)
                 # Generate Quadruple
@@ -158,6 +162,28 @@ class Chubby:
 
     # </editor-fold>
 
+    # <editor-fold desc="Functions">
+    def set_active_function(self, fun):
+        # Saved as a ActiveFunction
+        self.active_function.id = fun.id_function
+        self.active_function.return_type = fun.return_type
+
+    def function_return(self):
+
+        return_value = self._operand.pop()
+
+        if return_value is None:
+            raise BigError("Error on retrun dara")
+
+        check_data = cube.compare_types(Operator.RETURN, return_value.type_var, self.active_function.return_type)
+
+        quadruple = QuadruplePack(Operator.RETURN, l_value=return_value, r_value=None, result=self.active_function)
+
+        self.quadruple.add(quadruple)
+
+    # </editor-fold>
+
+    # <editor-fold desc="Jumps">
     # Generate GOTOF
     def jump_false(self):
 
@@ -184,6 +210,14 @@ class Chubby:
         address_quadruple = FluffyVariable(None, None, addr=available_quadruple)
         self.quadruple.fill(actual_quadruple, address_quadruple)
 
+    # Make GOSUB
+    def gosub(self):
+        # TODO: Create function for gosub
+        self._era.append(self.quadruple.index)
+        pass
+
+    # </editor-fold>
+
     # <editor-fold desc="Constants">
     def add_constants(self, value):
         if value not in self._constants:
@@ -198,6 +232,9 @@ class Chubby:
         return self._constants[value]
 
     # </editor-fold>
+
+    def set_function_size(self):
+        pass
 
     # <editor-fold desc="Prints for test">
 
@@ -239,4 +276,5 @@ class Chubby:
 
     def print_test(self, value=""):
         print("TEST : {}".format(value))
+
     # </editor-fold>
