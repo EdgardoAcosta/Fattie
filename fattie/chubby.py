@@ -2,7 +2,7 @@ from fattie.cube import Cube
 from fattie.belly.types import Types
 from fattie.belly.quadruple import Operator
 from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import QuadruplePack, QuadrupleStack
+from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
 from fattie.belly.heavyfunction import HeavyFunction, ActiveFunction
 from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
 
@@ -29,6 +29,21 @@ class Chubby:
         self.active_function = ActiveFunction()
 
         self._next_const_addr = 500000
+
+    @staticmethod
+    def text_to_operator(op):
+        op = match_operators.get(op)
+        for e in list(Operator):
+            if op == e.name:
+                return e
+        raise BigError("Operator {} is not a valid one".format(op))
+
+    @staticmethod
+    def text_to_type(tp):
+        for t in list(Types):
+            if tp.upper() == t.name:
+                return t
+        raise BigError("Type {} is not a valid one".format(tp))
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
@@ -82,41 +97,41 @@ class Chubby:
         self._operator.append(operator)
 
     def _top_operator(self):
+        if len(self._operator) == 0:
+            return None
         return self._operator[-1]
 
     def _top_operand(self):
         return self._operand[-1]
 
-    def check_top(self):
+    def check_operator_stack(self, list_operators):
+        if self._top_operator() in list_operators:
+            self._check_top()
 
-        if len(self._operator)> 0 and self._top_operator() in [Operator.PLUS, Operator.MINUS, Operator.TIMES, Operator.DIVIDE]:
-            r_operand = self._operand.pop()
-            r_type = r_operand.type_var
-            l_operand = self._operand.pop()
-            l_type = l_operand.type_var
-            oper = self._operator.pop()
+    def _check_top(self):
+        # len(self._operator)> 0
+        r_operand = self._operand.pop()
+        r_type = r_operand.type_var
+        l_operand = self._operand.pop()
+        l_type = l_operand.type_var
+        oper = self._operator.pop()
 
-            check_types = cube.compare_types(oper, l_type, r_type)
+        check_types = cube.compare_types(oper, l_type, r_type)
 
-            if check_types:
-                val_result = address.set_addr(check_types)
+        if check_types:
+            val_result = address.set_addr(check_types)
 
-                result = FluffyVariable(None, check_types, val_result)
-                # Generate Quadruple
-                quadruple = QuadruplePack(oper, l_operand, r_operand, result)
-                # Push quadruple to list
-                self.quadruple.add(quadruple)
+            result = FluffyVariable(None, check_types, val_result)
+            # Generate Quadruple
+            quadruple = QuadruplePack(oper, l_operand, r_operand, result)
+            # Push quadruple to list
+            self.quadruple.add(quadruple)
 
-                # Add result position of quadruple to the operand list
-                self._operand.append(result)
+            # Add result position of quadruple to the operand list
+            self._operand.append(result)
 
-            else:
-                raise BigError.mismatch_operator("{} {} {} ".format(l_type.name, oper.name, r_type.name))
         else:
-            # TODO: Validate the boolean variables
-            # for i in self._operand:
-            #     print(i.parse())
-            pass
+            raise BigError.mismatch_operator("{} {} {} ".format(l_type.name, oper.name, r_type.name))
 
     def create_assignation(self):
         expression = self._operand.pop()
@@ -166,6 +181,12 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="Functions">
+    def function_call_find(self, fn_name):
+        find = self.find_function(fn_name)
+
+        if find is None:
+            raise BigError.undefined_function("Function not declared")
+
     def set_active_function(self, fun):
         # Saved as a ActiveFunction
         self.active_function.id = fun.id_function
@@ -184,17 +205,23 @@ class Chubby:
 
         self.quadruple.add(quadruple)
 
+    def function_end(self):
+        self.quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
+
     # </editor-fold>
 
     # <editor-fold desc="Jumps">
     # Generate GOTOF
     def jump_false(self):
-
-        if len(self._operand) == 0:
-            raise BigError("The stack is empty")
+        # if len(self._operand) == 0:
 
         self._jumps.append(self.quadruple.index)
+
         result = self._operand.pop()
+
+        if result is None:
+            print(self._operand)
+            raise BigError("The stack is empty")
 
         if result.type_var != Types.BOOLEAN:
             raise BigError.mismatch_operator("The operation doesn't return a boolean value")
@@ -227,14 +254,16 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="Constants">
-    def add_constants(self, value):
+    def add_constants(self, value, type):
         if value not in self._constants:
             self._constants[value] = self._next_const_addr
             self._next_const_addr += 1
-
+            const = FluffyVariable(None, type_var=type, addr=self._constants[value])
             quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, value), r_value=None,
-                                      result=FluffyVariable(None, None, self._constants[value]))
+                                      result=const)
 
+            print(quadruple.parse())
+            self.add_operand(const)
             self.quadruple.add(quadruple)
 
         return self._constants[value]
@@ -287,7 +316,8 @@ class Chubby:
         print("\nPrint quadruple \n")
         self.quadruple.print()
 
-    def print_test(self, value=""):
-        print("TEST : {}".format(value))
+    @staticmethod
+    def print_test(value=""):
+        print("***** TEST *****: {}".format(value))
 
     # </editor-fold>

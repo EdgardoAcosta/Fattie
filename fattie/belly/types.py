@@ -1,5 +1,4 @@
-from enum import IntEnum, Enum
-from fattie.belly.exceptions import BigError
+from enum import Enum
 
 
 class Types(Enum):

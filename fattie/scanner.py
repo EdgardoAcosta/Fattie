@@ -73,7 +73,7 @@ t_ignore = ' '
 
 
 def t_ignore_SINGLE_COMMENT(t):
-    r'\#.*\n'
+    r'\$.*([\s]*)?'
     t.lexer.lineno += 1
 
 

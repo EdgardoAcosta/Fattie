@@ -1,17 +1,17 @@
 var Char: test8, test6
-fun fun1(Boolean: parm1):Int=>
+fun fun1(Boolean: param1):Int=>
 		var Int: test11,variableTest
-
+		if param1 =>
+		    test11 = test11 + test11
 
 fun fun2(Int: parm3, Int: parm5):Int=>
-		var Char: test1,variableTest
+		var Char: test11,variableTest
 		var Boolean: v1
 
 main =>
 		var Char : test0, test4, test10
 		var Int : test11, test12
-		var Boolean : parm1
-		test4 = test4 + (test10 + test0)
-		if parm1 =>
+		var Boolean : param1
+		if param1 =>
 		    test11 = test11 + test11
 

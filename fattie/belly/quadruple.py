@@ -1,5 +1,13 @@
 from enum import IntEnum
 
+match_operators = {
+    "+": "PLUS",
+    "-": "MINUS",
+    "*": "TIMES",
+    "/": "DIVIDE",
+    "=": "EQUALS"
+}
+
 
 class Operator(IntEnum):
     PLUS = 1

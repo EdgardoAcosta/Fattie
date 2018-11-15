@@ -81,12 +81,20 @@ def p_n_main(p):
 
 
 def p_function_call(p):
-    '''function_call : ID OPEN_PAREN call_params CLOSE_PAREN NEW_LINE'''
+    '''function_call : ID n_find_fn_name OPEN_PAREN call_params CLOSE_PAREN'''
 
     try:
         chubby.gosub()
     except BigError as e:
         e.print(p.lineno(2))
+
+
+def p_n_find_fn_name(p):
+    '''n_find_fn_name : '''
+    try:
+        chubby.function_call_find(p[-1])
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_call_params(p):
@@ -104,7 +112,7 @@ def p_sub_expression(p):
 
 # <editor-fold desc="Block">
 def p_block(p):
-    '''block : INDENT block_body DEDENT'''
+    '''block : INDENT block_body sub_block_body DEDENT'''
     pass
 
 
@@ -136,13 +144,17 @@ def p_statement(p):
                  | assignation NEW_LINE
                  | if
                  | special_fun NEW_LINE
-                 | function_call
+                 | function_call NEW_LINE
                  | RETURN expression n_return NEW_LINE'''
+
+
+def p_statement_err(p):
+    '''statement : error'''
+    print("ERROR - {}".format(p.lineno(0)))
 
 
 def p_n_return(p):
     '''n_return : '''
-
     try:
         chubby.function_return()
     except BigError as e:
@@ -159,10 +171,8 @@ def p_block_statement(p):
     pass
 
 
-# TODO: Validar que el statement no pueda ser vacio
-# TODO: Validar NEW_LINE del block_statement
 def p_sub_block_statement(p):
-    '''sub_block_statement : sub_block_statement statement NEW_LINE
+    '''sub_block_statement : sub_block_statement statement
                            | empty '''
     pass
 
@@ -202,7 +212,10 @@ def p_array_assignation(p):
 
 def p_if(p):
     '''if : IF expression n_if ARROW NEW_LINE block_statement optional_else'''
-    chubby.fill_jumps_if()
+    try:
+        chubby.fill_jumps_if()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 def p_n_if(p):
@@ -241,6 +254,8 @@ def p_comparison(p):
                   | GREATER exp
                   | NOTEQUAL exp
                   | empty'''
+    if p[1] is not None:
+        chubby.add_operator(chubby.text_to_operator(p[1]))
 
 
 def p_term(p):
@@ -251,16 +266,16 @@ def p_term(p):
 def p_n_factor(p):
     '''n_factor : '''
     try:
-        chubby.check_top()
+        chubby.check_operator_stack([Operator.TIMES, Operator.DIVIDE])
     except BigError as e:
-        e.print(p.lineno(-1))
+        e.print(p.lineno(0))
 
 
 def p_operator(p):
     '''operator : sign n_operator exp
                 | empty'''
     try:
-        chubby.check_top()
+        chubby.check_operator_stack([Operator.PLUS, Operator.MINUS])
     except BigError as e:
         e.print(p.lineno(1))
 
@@ -269,10 +284,10 @@ def p_n_operator(p):
     '''n_operator : '''
 
     if not p[-1] is None:
-        if p[-1] is "+":
-            chubby.add_operator(Operator.PLUS)
-        else:
-            chubby.add_operator(Operator.MINUS)
+        try:
+            chubby.add_operator(chubby.text_to_operator(p[-1]))
+        except BigError as e:
+            e.print(p.lineno(0))
 
 
 def p_factor(p):
@@ -298,10 +313,7 @@ def p_term_factor(p):
                    | empty'''
 
     if not p[1] is None:
-        if p[1] is "*":
-            chubby.add_operator(Operator.TIMES)
-        else:
-            chubby.add_operator(Operator.DIVIDE)
+        chubby.add_operator(chubby.text_to_operator(p[1]))
 
 
 # </editor-fold>
@@ -322,10 +334,12 @@ def p_var_id(p):
 def p_save_type(p):
     '''save_type : '''
     try:
-        value = Types[p[-1].upper()]
+        value = chubby.text_to_type(p[-1])
+
         var_builder.put('type_var', value)
-    except KeyError as e:
-        raise BigError("{} is not a valid type".format(p[-1]))
+    except BigError as e:
+        e.print(p.lineno(-1))
+        # raise BigError("{} is not a valid type".format(p[-1]))
 
 
 def p_more_variables(p):
@@ -352,8 +366,9 @@ def p_function(p):
     '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW n_function NEW_LINE block'''
 
     fn_builder.clear()
+    chubby.function_end()
     # Release var table for function (n_point =  7)
-    chubby.print_local_variables()
+    # chubby.print_local_variables()
     chubby.clean_variables_from_function()
     chubby.reset_addr()
 
@@ -398,6 +413,7 @@ def p_function_params(p):
 def p_param(p):
     '''param : type save_type COLON ID '''
     var_builder.put('id_var', p[4])
+
     more_variable.append(var_builder.build())
     function_param.append(var_builder.build())
     var_builder.clear()
@@ -557,10 +573,24 @@ def p_var_cte(p):
 
 
 def p_constants(p):
-    '''constant : CTEI
-                | CTEF
-                | CTEC'''
-    chubby.add_constants(p[1])
+    '''constant : ctei
+                | ctef
+                | ctec'''
+
+
+def p_ctei(p):
+    '''ctei : CTEI'''
+    chubby.add_constants(p[1], Types.INT)
+
+
+def p_ctef(p):
+    '''ctef : CTEF'''
+    chubby.add_constants(p[1], Types.FLOAT)
+
+
+def p_ctec(p):
+    '''ctec : CTEC'''
+    chubby.add_constants(p[1], Types.FLOAT)
 
 
 def p_n_var_cte_id(p):
