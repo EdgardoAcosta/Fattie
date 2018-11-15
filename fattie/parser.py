@@ -169,7 +169,7 @@ def p_statement(p):
 
 def p_statement_err(p):
     '''statement : error'''
-    print("ERROR - {}".format(p.lineno(0)))
+    print("Statement error - {}".format(p.lineno(0)))
 
 
 def p_n_return(p):
@@ -386,6 +386,7 @@ def p_function(p):
 
     fn_builder.clear()
     chubby.function_end()
+    chubby.set_function_size()
     # Release var table for function (n_point =  7)
     # chubby.print_local_variables()
     chubby.clean_variables_from_function()
@@ -401,7 +402,7 @@ def p_n_function(p):
         fun = fn_builder.build()
         # Add function to function table
         chubby.add_function(fun)
-        # Save params as a local variable of the function
+        # Save params as a local variable of the function|
         try:
             global more_variable
             for var in more_variable:

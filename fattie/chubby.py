@@ -168,6 +168,11 @@ class Chubby:
 
     # <editor-fold desc="Functions">
 
+    def _top_era(self):
+        if len(self._era) == 0:
+            return None
+        return self._era[-1]
+
     def function_call_find(self, fn_name):
         self.active_function.clear()
         find = self.find_function(fn_name)
@@ -184,20 +189,36 @@ class Chubby:
         return_value = self._operand.pop()
 
         if return_value is None:
-            raise BigError("Error on retrun dara")
+            raise BigError("Error on retrun data")
 
         check_data = cube.compare_types(Operator.RETURN, return_value.type_var, self.active_function.return_type)
 
-        quadruple = QuadruplePack(Operator.RETURN, l_value=return_value, r_value=None, result=self.active_function)
+        if check_data:
 
-        self._quadruple.add(quadruple)
+            result = FluffyVariable(None, self.active_function.return_type,
+                                    addr=AddressLocation.set_addr(kind=self.active_function.return_type))
+
+            quadruple = QuadruplePack(Operator.RETURN, l_value=return_value, r_value=None, result=result)
+
+            self._quadruple.add(quadruple)
+        else:
+            raise BigError.mismatch_operator(
+                "Return type {} does't correspond to the return type of function {} ".format(return_value.type_var,
+                                                                                             self.active_function.return_type))
 
     def function_end(self):
         self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
+    def set_function_size(self):
+        size = 22
+        self.active_function.size = 22
+        while self._top_era() is not None:
+            fn = self._quadruple.stack(self._era.pop())
+            fn.result = FluffyVariable(None, None, size)
+
     def function_create_era(self):
         # TODO: Generate ERA size
-        size_era = FluffyVariable(None, None, 5)
+        size_era = FluffyVariable(None, None, self.active_function.size)
         self._quadruple.add(QuadruplePack(Operator.ERA, None, None, size_era))
 
     def function_validate_params(self, empty_params=False):
