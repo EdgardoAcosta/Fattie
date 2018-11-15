@@ -1,4 +1,5 @@
 from enum import IntEnum
+from fattie.belly.fluffyvariable import FluffyVariable
 
 match_operators = {
     "+": "PLUS",
@@ -76,10 +77,14 @@ class QuadruplePack:
     # For test proposes only
 
     def parse(self):
+        r_v = self.r_value
+        if self.r_value is not None:
+            r_v = self.r_value.parse() if isinstance(self.r_value, FluffyVariable) else self.r_value
+
         return {
             "operator": self.operator.name,
             "l_value": self.l_value.parse() if self.l_value is not None else self.l_value,
-            "r_value": self.r_value.parse() if self.r_value is not None else self.r_value,
+            "r_value": r_v,
             "result": self.result.parse() if self.result is not None else self.result
         }
 

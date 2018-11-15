@@ -105,6 +105,10 @@ def p_n_era(p):
 def p_call_params(p):
     '''call_params : expression sub_expression
                    | empty'''
+    try:
+        chubby.function_validate_params((p[1] is not None))
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_sub_expression(p):
@@ -117,7 +121,7 @@ def p_params(p):
               | empty'''
 
     try:
-        chubby.function_validate_params()
+        chubby.function_validate_params((p[1] is not None))
     except BigError as e:
         e.print(p.lineno(-1))
 

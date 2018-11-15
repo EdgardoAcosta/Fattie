@@ -175,8 +175,6 @@ class Chubby:
         if find is None:
             raise BigError.undefined_function(
                 "The Function in the assignation doesn't see to be declared -> {} <-".format(fn_name))
-
-        print(find.parse())
         self.active_function.id = find.id_function
         self.active_function.params_size = len(find.params)
         self.active_function.return_type = find.return_type
@@ -199,7 +197,8 @@ class Chubby:
 
     def function_create_era(self):
         # TODO: Generate ERA size
-        self._quadruple.add(QuadruplePack(Operator.ERA, None, 5))
+        size_era = FluffyVariable(None, None, 5)
+        self._quadruple.add(QuadruplePack(Operator.ERA, None, None, size_era))
 
     def function_validate_params(self, empty_params=False):
         fun = self.find_function(self.active_function.id)
@@ -207,17 +206,24 @@ class Chubby:
         if empty_params:
             if self.active_function.params_size != 0:
                 raise BigError.no_empty_params(
-                    "The function {} required {} parameters".format(fun.id_function, self._count_params))
-        else:
+                    "The function {} required {} parameters, {} given".format(fun.id_function,
+                                                                              self.active_function.params_size,
+                                                                              self._count_params + 1))
 
-            argument = self._operand.pop()
+        argument = self._operand.pop()
 
-            if argument.type_var != fun.type_var:
-                raise BigError.mismatch_params(
-                    "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
+        if self._count_params + 1 > self.active_function.params_size:
+            raise BigError.no_empty_params(
+                "The function {} required {} parameters, {} given".format(fun.id_function,
+                                                                          self.active_function.params_size,
+                                                                          self._count_params + 1))
 
-            self._quadruple.add(QuadruplePack(Operator.PARAM, None, fun.params[self._count_params]))
-            self._count_params += 1
+        if argument.type_var != fun.params[self._count_params].type_var:
+            raise BigError.mismatch_params(
+                "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
+        param = FluffyVariable(None, None, self._count_params)
+        self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
+        self._count_params += 1
 
     # </editor-fold>
 
@@ -260,6 +266,9 @@ class Chubby:
     def gosub(self):
         # TODO: Create function for gosub
         self._era.append(self._quadruple.index)
+        # TODO: Calculate function gosub direction
+        function_dir = FluffyVariable(None, None, 1)
+        self._quadruple.add(QuadruplePack(Operator.GOSUB, None, None, function_dir))
         pass
 
     # </editor-fold>

@@ -72,9 +72,14 @@ t_MATRIX = r'\[[0-9]*\]\[[0-9]*\]'
 t_ignore = ' '
 
 
-def t_ignore_SINGLE_COMMENT(t):
-    r'\$.*([\s]*)?'
+def t_COMMENT(t):
+    r'\$.*([\s]*)?\n*'
     t.lexer.lineno += 1
+
+
+def t_ignore_multi_comment(t):
+    r'\$\*(.|\n)*\*\$?'
+    pass
 
 
 def t_ID(t):
