@@ -10,12 +10,6 @@ class BigError(SyntaxError):
         print('{} at line -> {} <-: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
 
     @staticmethod
-    def undefined_variable(msg):
-        err = BigError(msg)
-        err.err_name = 'Undefined variable'
-        return err
-
-    @staticmethod
     def undefined_function(msg):
         err = BigError(msg)
         err.err_name = 'Undefined function'
@@ -27,10 +21,30 @@ class BigError(SyntaxError):
         err.err_name = 'Redefined function'
         return err
 
+
+    @staticmethod
+    def no_empty_params(msg):
+        err = BigError(msg)
+        err.err_name = 'Function required params'
+        return err
+
+
+    @staticmethod
+    def mismatch_params(msg):
+        err = BigError(msg)
+        err.err_name = 'Mismatch parameter'
+        return err
+
     @staticmethod
     def redefined_variable(msg):
         err = BigError(msg)
         err.err_name = 'Redefined variable'
+        return err
+
+    @staticmethod
+    def undefined_variable(msg):
+        err = BigError(msg)
+        err.err_name = 'Undefined variable'
         return err
 
     @staticmethod

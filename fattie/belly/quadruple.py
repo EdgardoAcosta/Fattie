@@ -40,6 +40,7 @@ class Operator(IntEnum):
     RETURN = 25
     ENDPROC = 26
     END = 27
+    PARAM = 28
 
 
 class SpecialFunction(IntEnum):

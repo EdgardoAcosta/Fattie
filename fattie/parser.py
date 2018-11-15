@@ -81,7 +81,7 @@ def p_n_main(p):
 
 
 def p_function_call(p):
-    '''function_call : ID n_find_fn_name OPEN_PAREN call_params CLOSE_PAREN'''
+    '''function_call : ID n_find_fn_name n_era OPEN_PAREN call_params CLOSE_PAREN'''
 
     try:
         chubby.gosub()
@@ -97,14 +97,29 @@ def p_n_find_fn_name(p):
         e.print(p.lineno(-1))
 
 
+def p_n_era(p):
+    '''n_era : '''
+    chubby.function_create_era()
+
+
 def p_call_params(p):
     '''call_params : expression sub_expression
                    | empty'''
 
 
 def p_sub_expression(p):
-    '''sub_expression : sub_expression COMMA expression
+    '''sub_expression : sub_expression COMMA params
                       | empty'''
+
+
+def p_params(p):
+    '''params : expression
+              | empty'''
+
+    try:
+        chubby.function_validate_params()
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 # </editor-fold>
@@ -380,7 +395,6 @@ def p_n_function(p):
         global function_param
 
         fun = fn_builder.build()
-        # chubby.set_active_function(fun.id_function)
         # Add function to function table
         chubby.add_function(fun)
         # Save params as a local variable of the function

@@ -20,7 +20,14 @@ class HeavyFunction:
 class ActiveFunction:
 
     # Constructor
-    def __init__(self, _id=None, size=None, return_type=None):
+    def __init__(self, _id=None, size=None, params_size=None, return_type=None):
         self.id = _id
+        self.params_size = params_size
         self.size = size
         self.return_type = return_type
+
+    def clear(self):
+        self.id = None
+        self.params_size = None
+        self.size = None
+        self.return_type = None
