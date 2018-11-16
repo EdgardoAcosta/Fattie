@@ -42,6 +42,7 @@ class Operator(IntEnum):
     ENDPROC = 26
     END = 27
     PARAM = 28
+    GETRET = 29
 
 
 class SpecialFunction(IntEnum):
@@ -75,7 +76,6 @@ class QuadruplePack:
         self.result = result
 
     # For test proposes only
-
     def parse(self):
         r_v = self.r_value
         if self.r_value is not None:
@@ -105,6 +105,10 @@ class QuadrupleStack:
 
     def fill(self, position, value):
         self.stack[position].result = value
+
+    def write_to_file(self, file):
+        for i in self.stack:
+            file.write(str(i.parse()) + "\n")
 
     # For test proposes only
     def print(self):

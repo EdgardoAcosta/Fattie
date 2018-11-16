@@ -28,7 +28,8 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    chubby.print_all()
+    # chubby.print_all()
+    # chubby.print_quadruple()
 
 
 # Generate quadruple to jump to main
@@ -92,7 +93,7 @@ def p_function_call(p):
 def p_n_find_fn_name(p):
     '''n_find_fn_name : '''
     try:
-        chubby.function_call_find(p[-1])
+        chubby.function_validate(p[-1])
     except BigError as e:
         e.print(p.lineno(-1))
 
@@ -386,7 +387,7 @@ def p_function(p):
 
     fn_builder.clear()
     chubby.function_end()
-    chubby.set_function_size()
+
     # Release var table for function (n_point =  7)
     # chubby.print_local_variables()
     chubby.clean_variables_from_function()

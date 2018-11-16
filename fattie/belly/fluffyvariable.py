@@ -42,6 +42,13 @@ class AddressLocation:
 
         return actual_value
 
+    def calculate_era(self):
+        result = {}
+        for e in self.local_address:
+            result[e] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
+                                                                                         local_addr[e]
+        return result
+
     def reset_addr(self):
         self.local_address = local_addr.copy()
 
@@ -58,6 +65,6 @@ class FluffyVariable:
     def parse(self):
         return ({
             "id_var": self.id_var,
-            "type_var": self.type_var.name if self.type_var is not None else '',
+            "type_var": self.type_var if self.type_var is not None else '',
             "addr": self.addr if self.addr is not None else ''
         })
