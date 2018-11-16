@@ -45,7 +45,6 @@ class Chubby:
 
         if instance.id_var in self._local_variable:
             raise BigError.redefined_variable(instance.id_var)
-
         instance.addr = address.set_addr(instance.type_var)
         self._local_variable[instance.id_var] = instance
 

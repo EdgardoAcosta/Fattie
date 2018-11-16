@@ -28,8 +28,8 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    # chubby.print_all()
-    chubby.print_quadruple()
+    chubby.print_all()
+    # chubby.print_quadruple()
 
 
 # Generate quadruple to jump to main
@@ -211,7 +211,7 @@ def p_n_while(p):
 
 
 def p_assignation(p):
-    '''assignation : ID n_var_cte_id array_assignation EQUAL n_equal expression'''
+    '''assignation : ID n_var_cte_id variable_array EQUAL n_equal expression'''
     try:
         chubby.create_assignation()
     except BigError as e:
@@ -221,13 +221,6 @@ def p_assignation(p):
 def p_n_equal(p):
     '''n_equal : '''
     chubby.add_operator(Operator.EQUAL)
-
-
-# Array and Matrix value assignation
-def p_array_assignation(p):
-    '''array_assignation : OPEN_BRACKET expression CLOSE_BRACKET
-                         | OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
-                         | empty '''
 
 
 def p_if(p):
@@ -262,10 +255,12 @@ def p_n_else(p):
 # <editor-fold desc="Expression">
 def p_expression(p):
     '''expression : exp comparison'''
+    p[0] = p[1]
 
 
 def p_exp(p):
     '''exp : term operator'''
+    p[0] = p[1]
 
 
 def p_comparison(p):
@@ -375,11 +370,24 @@ def p_more_variables(p):
         more_variable.append(var_builder.build())
 
 
+# Array and Matrix value assignation
 def p_variable_array(p):
-    '''variable_array : ARRAY
-                      | MATRIX
+    '''variable_array : array
+                      | matrix
                       | empty'''
     p[0] = p[1]
+
+
+def p_array(p):
+    '''array : OPEN_BRACKET expression CLOSE_BRACKET'''
+    dimension = p[2]
+    print("Array {} , dimension {}".format(p[-1], dimension))
+
+
+def p_matrix(p):
+    '''matrix : OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET'''
+    dimension = p[2]  # * p[5]
+    print("Matrix {} , dimension {}".format(p[-1], dimension))
 
 
 # </editor-fold>
