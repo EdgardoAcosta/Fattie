@@ -21,5 +21,5 @@ main =>
 
 		$Checar NEW_LINE en assignacion en el block, al final de cod no funciona
         test11 = fun1(param1)
-		if param1 =>
+		if test11 notequal test12 =>
 		    test11 = test11 + test11

@@ -6,7 +6,11 @@ match_operators = {
     "-": "MINUS",
     "*": "TIMES",
     "/": "DIVIDE",
-    "=": "EQUALS"
+    "equals": "EQUALS",
+    "less": "LESS",
+    "greater": "GREATER",
+    "notequal": "NOTEQUAL",
+    "return": "RETURN"
 }
 
 

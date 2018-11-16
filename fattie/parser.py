@@ -29,7 +29,7 @@ def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
     # chubby.print_all()
-    # chubby.print_quadruple()
+    chubby.print_quadruple()
 
 
 # Generate quadruple to jump to main
@@ -275,7 +275,11 @@ def p_comparison(p):
                   | NOTEQUAL exp
                   | empty'''
     if p[1] is not None:
-        chubby.add_operator(chubby.text_to_operator(p[1]))
+        try:
+            chubby.add_operator(chubby.text_to_operator(p[1]))
+            chubby.check_operator_stack([Operator.LESS, Operator.GETRET, Operator.EQUALS, Operator.NOTEQUAL])
+        except BigError as e:
+            e.print(p.lineno(1))
 
 
 def p_term(p):

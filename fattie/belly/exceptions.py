@@ -21,13 +21,11 @@ class BigError(SyntaxError):
         err.err_name = 'Redefined function'
         return err
 
-
     @staticmethod
     def no_empty_params(msg):
         err = BigError(msg)
         err.err_name = 'Function required params'
         return err
-
 
     @staticmethod
     def mismatch_params(msg):

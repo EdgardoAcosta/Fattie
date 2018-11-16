@@ -25,7 +25,7 @@ def _eat(data):
     parser = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
     if parser == "COMPILED":
         print("Compiled successfully ")
-        chubby.make_output()
+        # chubby.make_output()
     else:
         pass
 
