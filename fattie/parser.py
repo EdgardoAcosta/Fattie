@@ -2,12 +2,12 @@ import sys
 import ply.yacc as yacc
 from fattie.chubby import Chubby
 from fattie.scanner import tokens
-from fattie.belly.fluffyvariable import FluffyVariable
-from fattie.belly.heavyfunction import HeavyFunction
-from fattie.belly.builder import Builder
-from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import Operator
 from fattie.belly.types import Types
+from fattie.belly.builder import Builder
+from fattie.belly.quadruple import Operator
+from fattie.belly.exceptions import BigError
+from fattie.belly.heavyfunction import HeavyFunction
+from fattie.belly.fluffyvariable import FluffyVariable
 
 from fattie import cube
 
@@ -28,7 +28,8 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    chubby.print_all()
+    # chubby.print_all()
+    chubby.print_quadruple()
 
 
 # Generate quadruple to jump to main
@@ -69,6 +70,7 @@ def p_program_functions(p):
 # <editor-fold desc="Main">
 def p_main(p):
     '''main : MAIN ARROW NEW_LINE n_main block'''
+    chubby.end_main()
 
 
 def p_n_main(p):
@@ -80,17 +82,49 @@ def p_n_main(p):
 
 
 def p_function_call(p):
-    '''function_call : ID OPEN_PAREN call_params CLOSE_PAREN NEW_LINE'''
+    '''function_call : ID n_find_fn_name n_era OPEN_PAREN call_params CLOSE_PAREN'''
+
+    try:
+        chubby.gosub()
+    except BigError as e:
+        e.print(p.lineno(2))
+
+
+def p_n_find_fn_name(p):
+    '''n_find_fn_name : '''
+    try:
+        chubby.function_validate(p[-1])
+    except BigError as e:
+        e.print(p.lineno(-1))
+
+
+def p_n_era(p):
+    '''n_era : '''
+    chubby.function_create_era()
 
 
 def p_call_params(p):
     '''call_params : expression sub_expression
                    | empty'''
+    try:
+        chubby.function_validate_params((p[1] is not None))
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_sub_expression(p):
-    '''sub_expression : sub_expression COMMA expression
+    '''sub_expression : sub_expression COMMA params
                       | empty'''
+
+
+def p_params(p):
+    '''params : expression
+              | empty'''
+
+    try:
+        chubby.function_validate_params((p[1] is not None))
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 # </editor-fold>
@@ -98,7 +132,7 @@ def p_sub_expression(p):
 
 # <editor-fold desc="Block">
 def p_block(p):
-    '''block : INDENT block_body DEDENT'''
+    '''block : INDENT block_body sub_block_body DEDENT'''
     pass
 
 
@@ -130,8 +164,21 @@ def p_statement(p):
                  | assignation NEW_LINE
                  | if
                  | special_fun NEW_LINE
-                 | function_call
-                 | RETURN expression NEW_LINE'''
+                 | function_call NEW_LINE
+                 | RETURN expression n_return NEW_LINE'''
+
+
+def p_statement_err(p):
+    '''statement : error'''
+    print("Statement error - {}".format(p.lineno(0)))
+
+
+def p_n_return(p):
+    '''n_return : '''
+    try:
+        chubby.function_return()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 # </editor-fold>
@@ -144,17 +191,18 @@ def p_block_statement(p):
     pass
 
 
-# TODO: Validar que el statement no pueda ser vacio
-# TODO: Validar NEW_LINE del block_statement
 def p_sub_block_statement(p):
-    '''sub_block_statement : sub_block_statement statement NEW_LINE
+    '''sub_block_statement : sub_block_statement statement
                            | empty '''
     pass
 
 
 def p_while(p):
     '''while : WHILE expression n_while ARROW NEW_LINE block_statement'''
-    chubby.fill_jumps_while()
+    try:
+        chubby.fill_jumps_while()
+    except BigError as e:
+        e.print(p.lineno(1))
 
 
 def p_n_while(p):
@@ -166,7 +214,7 @@ def p_n_while(p):
 
 
 def p_assignation(p):
-    '''assignation : ID n_var_cte_id array_assignation EQUAL n_equal expression'''
+    '''assignation : ID n_var_cte_id variable_array EQUAL n_equal expression'''
     try:
         chubby.create_assignation()
     except BigError as e:
@@ -178,16 +226,12 @@ def p_n_equal(p):
     chubby.add_operator(Operator.EQUAL)
 
 
-# Array and Matrix value assignation
-def p_array_assignation(p):
-    '''array_assignation : OPEN_BRACKET expression CLOSE_BRACKET
-                         | OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
-                         | empty '''
-
-
 def p_if(p):
     '''if : IF expression n_if ARROW NEW_LINE block_statement optional_else'''
-    chubby.fill_jumps_if()
+    try:
+        chubby.fill_jumps_if()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 def p_n_if(p):
@@ -199,13 +243,18 @@ def p_n_if(p):
 
 
 def p_optional_else(p):
-    '''optional_else : ELSE n_else NEW_LINE block_statement
+    '''optional_else : ELSE n_else ARROW NEW_LINE block_statement
                      | empty'''
 
 
 def p_n_else(p):
     '''n_else : '''
-    chubby.print_test("ELSE")
+    try:
+        chubby.fill_jumps_if(line=1)
+        chubby.make_goto_if()
+        # chubby.jump_else()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 # </editor-fold>
@@ -214,10 +263,12 @@ def p_n_else(p):
 # <editor-fold desc="Expression">
 def p_expression(p):
     '''expression : exp comparison'''
+    p[0] = p[1]
 
 
 def p_exp(p):
     '''exp : term operator'''
+    p[0] = p[1]
 
 
 def p_comparison(p):
@@ -226,6 +277,12 @@ def p_comparison(p):
                   | GREATER exp
                   | NOTEQUAL exp
                   | empty'''
+    if p[1] is not None:
+        try:
+            chubby.add_operator(chubby.text_to_operator(p[1]))
+            chubby.check_operator_stack([Operator.LESS, Operator.GETRET, Operator.EQUALS, Operator.NOTEQUAL])
+        except BigError as e:
+            e.print(p.lineno(1))
 
 
 def p_term(p):
@@ -236,16 +293,16 @@ def p_term(p):
 def p_n_factor(p):
     '''n_factor : '''
     try:
-        chubby.check_top()
+        chubby.check_operator_stack([Operator.TIMES, Operator.DIVIDE])
     except BigError as e:
-        e.print(p.lineno(-1))
+        e.print(p.lineno(0))
 
 
 def p_operator(p):
     '''operator : sign n_operator exp
                 | empty'''
     try:
-        chubby.check_top()
+        chubby.check_operator_stack([Operator.PLUS, Operator.MINUS])
     except BigError as e:
         e.print(p.lineno(1))
 
@@ -254,10 +311,10 @@ def p_n_operator(p):
     '''n_operator : '''
 
     if not p[-1] is None:
-        if p[-1] is "+":
-            chubby.add_operator(Operator.PLUS)
-        else:
-            chubby.add_operator(Operator.MINUS)
+        try:
+            chubby.add_operator(chubby.text_to_operator(p[-1]))
+        except BigError as e:
+            e.print(p.lineno(0))
 
 
 def p_factor(p):
@@ -283,10 +340,7 @@ def p_term_factor(p):
                    | empty'''
 
     if not p[1] is None:
-        if p[1] is "*":
-            chubby.add_operator(Operator.TIMES)
-        else:
-            chubby.add_operator(Operator.DIVIDE)
+        chubby.add_operator(chubby.text_to_operator(p[1]))
 
 
 # </editor-fold>
@@ -307,10 +361,12 @@ def p_var_id(p):
 def p_save_type(p):
     '''save_type : '''
     try:
-        value = Types[p[-1].upper()]
+        value = chubby.text_to_type(p[-1])
+
         var_builder.put('type_var', value)
-    except KeyError as e:
-        raise BigError("{} is not a valid type".format(p[-1]))
+    except BigError as e:
+        e.print(p.lineno(-1))
+        # raise BigError("{} is not a valid type".format(p[-1]))
 
 
 def p_more_variables(p):
@@ -322,11 +378,24 @@ def p_more_variables(p):
         more_variable.append(var_builder.build())
 
 
+# Array and Matrix value assignation
 def p_variable_array(p):
-    '''variable_array : ARRAY
-                      | MATRIX
+    '''variable_array : array
+                      | matrix
                       | empty'''
     p[0] = p[1]
+
+
+def p_array(p):
+    '''array : OPEN_BRACKET expression CLOSE_BRACKET'''
+    dimension = p[2]
+    print("Array {} , dimension {}".format(p[-1], dimension))
+
+
+def p_matrix(p):
+    '''matrix : OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET'''
+    dimension = p[2]  # * p[5]
+    print("Matrix {} , dimension {}".format(p[-1], dimension))
 
 
 # </editor-fold>
@@ -337,20 +406,32 @@ def p_function(p):
     '''function : FUN function_id  OPEN_PAREN function_params CLOSE_PAREN function_return_type ARROW n_function NEW_LINE block'''
 
     fn_builder.clear()
+    chubby.function_end()
+
+    # Release var table for function (n_point =  7)
+    # chubby.print_local_variables()
     chubby.clean_variables_from_function()
+    chubby.reset_addr()
 
 
 def p_n_function(p):
     '''n_function : '''
 
     try:
-
         global function_param
 
-        var = fn_builder.build()
-        chubby.add_function(var)
-
-        function_param = []
+        fun = fn_builder.build()
+        # Add function to function table
+        chubby.add_function(fun)
+        # Save params as a local variable of the function|
+        try:
+            global more_variable
+            for var in more_variable:
+                chubby.add_local_variable(var)
+            more_variable.clear()
+            function_param = []
+        except BigError as e:
+            e.print(p.lineno(1))
 
     except BigError as e:
         e.print(p.lineno(-1))
@@ -370,8 +451,12 @@ def p_function_params(p):
 
 
 def p_param(p):
-    '''param : type COLON ID '''
-    function_param.append({"id": p[3], "type": p[1]})
+    '''param : type save_type COLON ID '''
+    var_builder.put('id_var', p[4])
+
+    more_variable.append(var_builder.build())
+    function_param.append(var_builder.build())
+    var_builder.clear()
 
 
 def p_more_params(p):
@@ -387,6 +472,7 @@ def p_function_return_type(p):
     value_return = p[2]
     if p[1] is None:
         value_return = None
+
     fn_builder.put('return_type', value_return)
 
 
@@ -527,10 +613,24 @@ def p_var_cte(p):
 
 
 def p_constants(p):
-    '''constant : CTEI
-                | CTEF
-                | CTEC'''
-    chubby.add_constants(p[1])
+    '''constant : ctei
+                | ctef
+                | ctec'''
+
+
+def p_ctei(p):
+    '''ctei : CTEI'''
+    chubby.add_constants(p[1], Types.INT)
+
+
+def p_ctef(p):
+    '''ctef : CTEF'''
+    chubby.add_constants(p[1], Types.FLOAT)
+
+
+def p_ctec(p):
+    '''ctec : CTEC'''
+    chubby.add_constants(p[1], Types.FLOAT)
 
 
 def p_n_var_cte_id(p):

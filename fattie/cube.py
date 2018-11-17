@@ -142,7 +142,11 @@ class Cube:
         # Sleep sleep de funcition N miliseconds
         self.set_cube(SpecialFunction.SLEEP, Types.INT, None, None)
 
-        # self.print()
+        # Return
+        self.set_cube(Operator.RETURN, Types.INT, Types.INT, Types.INT)
+        self.set_cube(Operator.RETURN, Types.FLOAT, Types.FLOAT, Types.FLOAT)
+        self.set_cube(Operator.RETURN, Types.CHAR, Types.CHAR, Types.CHAR)
+        self.set_cube(Operator.RETURN, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN)
 
     def print(self):
         print(self.cube)

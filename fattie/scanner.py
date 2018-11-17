@@ -52,7 +52,7 @@ reserved = {
 tokens = [
              'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
              'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
-             'ARROW', 'ARRAY', 'MATRIX'
+             'ARROW'
          ] + list(reserved.values())
 
 t_EQUAL = r'\='
@@ -67,14 +67,17 @@ t_MINUS = r'\-'
 t_TIMES = r'\*'
 t_DIVIDE = r'\/'
 t_ARROW = r'\=\>'
-t_ARRAY = r'\[[0-9]*\]'
-t_MATRIX = r'\[[0-9]*\]\[[0-9]*\]'
 t_ignore = ' '
 
 
-def t_ignore_SINGLE_COMMENT(t):
-    r'\#.*\n'
+def t_COMMENT(t):
+    r'\$.*([\s]*)?\n*'
     t.lexer.lineno += 1
+
+
+def t_ignore_multi_comment(t):
+    r'\$\*(.|\n)*\*\$?'
+    pass
 
 
 def t_ID(t):

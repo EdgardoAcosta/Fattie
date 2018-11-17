@@ -1,5 +1,5 @@
 import sys
-from fattie.parser import parser_fattie
+from fattie.parser import parser_fattie, chubby
 from fattie.scanner import fattie_lexer
 
 
@@ -25,6 +25,7 @@ def _eat(data):
     parser = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
     if parser == "COMPILED":
         print("Compiled successfully ")
+        # chubby.make_output()
     else:
         pass
 
