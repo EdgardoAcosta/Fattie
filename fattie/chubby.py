@@ -156,8 +156,11 @@ class Chubby:
     # <editor-fold desc="IF conditional">
 
     # Fill jumps for if
-    def fill_jumps_if(self):
-        self._fill()
+    def fill_jumps_if(self, line=0):
+        self._fill(line)
+
+    def make_goto_if(self):
+        self._jump()
 
     # </editor-fold>
 
@@ -266,12 +269,12 @@ class Chubby:
         self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
 
     # Fill jumps
-    def _fill(self):
+    def _fill(self, line=0):
         actual_quadruple = self._jumps.pop()
         if actual_quadruple is None:
             raise BigError("Error, pending quadruples")
         else:
-            available_quadruple = self._quadruple.index
+            available_quadruple = self._quadruple.index + line
             address_quadruple = FluffyVariable(None, None, addr=available_quadruple)
             self._quadruple.fill(actual_quadruple, address_quadruple)
 

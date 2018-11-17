@@ -28,8 +28,8 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    chubby.print_all()
-    # chubby.print_quadruple()
+    # chubby.print_all()
+    chubby.print_quadruple()
 
 
 # Generate quadruple to jump to main
@@ -199,7 +199,10 @@ def p_sub_block_statement(p):
 
 def p_while(p):
     '''while : WHILE expression n_while ARROW NEW_LINE block_statement'''
-    chubby.fill_jumps_while()
+    try:
+        chubby.fill_jumps_while()
+    except BigError as e:
+        e.print(p.lineno(1))
 
 
 def p_n_while(p):
@@ -240,13 +243,18 @@ def p_n_if(p):
 
 
 def p_optional_else(p):
-    '''optional_else : ELSE n_else NEW_LINE block_statement
+    '''optional_else : ELSE n_else ARROW NEW_LINE block_statement
                      | empty'''
 
 
 def p_n_else(p):
     '''n_else : '''
-    chubby.print_test("ELSE")
+    try:
+        chubby.fill_jumps_if(line=1)
+        chubby.make_goto_if()
+        # chubby.jump_else()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 # </editor-fold>

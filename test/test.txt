@@ -10,7 +10,11 @@ fun fun2(Int: parm3, Int: parm5):Int=>
 		var Boolean: v1
 		test11 = variableTest
 		variableTest = test11
-		fun2(parm3,parm3)
+
+		if parm3 notequal parm5 =>
+		    parm5 = fun2(parm3,parm3)
+		else =>
+		    parm5 = parm3 + 1
 
 		return parm5
 
@@ -21,5 +25,10 @@ main =>
 
 		$Checar NEW_LINE en assignacion en el block, al final de cod no funciona
         test11 = fun1(param1)
+
 		if test11 notequal test12 =>
-		    test11 = test11 + test11
+		    test11 = fun2(test11,test12)
+		else =>
+		    test12 = test12 + 1
+
+		test11 = 2
