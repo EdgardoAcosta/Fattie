@@ -17,6 +17,7 @@ function_param = []  # Function to store parameters of a function
 more_variable = []  # Variable to store the ID of variables in same row
 fn_builder = Builder(HeavyFunction)
 var_builder = Builder(FluffyVariable)
+array = None
 
 precedence = (
     ('left', 'MINUS'),
@@ -29,7 +30,8 @@ def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
     # chubby.print_all()
-    chubby.print_quadruple()
+    # chubby.print_quadruple()
+    chubby.print_local_variables()
 
 
 # Generate quadruple to jump to main
@@ -153,6 +155,7 @@ def p_block_variable(p):
     try:
         global more_variable
         for var in more_variable:
+            var.print()
             chubby.add_local_variable(var)
         more_variable.clear()
     except BigError as e:
@@ -214,11 +217,27 @@ def p_n_while(p):
 
 
 def p_assignation(p):
-    '''assignation : ID n_var_cte_id variable_array EQUAL n_equal expression'''
+    '''assignation : ID n_var_cte_id assignation_variables EQUAL n_equal expression'''
     try:
         chubby.create_assignation()
     except BigError as e:
         e.print(p.lineno(1))
+
+
+def p_assignation_variables(p):
+    '''assignation_variables : OPEN_BRACKET expression CLOSE_BRACKET
+                             | OPEN_BRACKET expression CLOSE_BRACKET ID OPEN_BRACKET expression CLOSE_BRACKET
+                             | empty'''
+
+
+def p_n_var_cte_id(p):
+    '''n_var_cte_id : '''
+    try:
+        var = chubby.find_variable(p[-1])
+        chubby.add_operand(var)
+    except BigError as e:
+        e.print(p.lineno(-1))
+        raise e
 
 
 def p_n_equal(p):
@@ -330,8 +349,7 @@ def p_unary(p):
 
 
 def p_sub_factor(p):
-    '''sub_factor : OPEN_PAREN expression CLOSE_PAREN
-                  | var_cte'''
+    '''sub_factor : var_cte'''
 
 
 def p_term_factor(p):
@@ -348,29 +366,35 @@ def p_term_factor(p):
 
 # <editor-fold desc="Variables">
 def p_variable(p):
-    '''variable : VAR var_id NEW_LINE'''
+    '''variable : VAR var_body NEW_LINE'''
 
 
-def p_var_id(p):
-    '''var_id : type save_type COLON  ID variable_array more_variables'''
+def p_var_body(p):
+    '''var_body : type save_type COLON variable_type more_variables'''
     var_builder.put('id_var', p[4])
-    more_variable.append(var_builder.build())
+    var = var_builder.build()
+    more_variable.append(var)
     var_builder.clear()
+
+
+def p_variable_type(p):
+    '''variable_type : ID
+                     | array
+                     | matrix'''
+    p[0] = p[1]
 
 
 def p_save_type(p):
     '''save_type : '''
     try:
         value = chubby.text_to_type(p[-1])
-
         var_builder.put('type_var', value)
     except BigError as e:
         e.print(p.lineno(-1))
-        # raise BigError("{} is not a valid type".format(p[-1]))
 
 
 def p_more_variables(p):
-    '''more_variables : more_variables COMMA ID variable_array
+    '''more_variables : more_variables COMMA variable_type
                       | empty'''
 
     if len(p) > 2:
@@ -378,24 +402,22 @@ def p_more_variables(p):
         more_variable.append(var_builder.build())
 
 
-# Array and Matrix value assignation
-def p_variable_array(p):
-    '''variable_array : array
-                      | matrix
-                      | empty'''
+def p_array(p):
+    '''array : ID OPEN_BRACKET expression CLOSE_BRACKET'''
+    var_builder.put('type_var', Types.ARRAY_INT)
     p[0] = p[1]
 
 
-def p_array(p):
-    '''array : OPEN_BRACKET expression CLOSE_BRACKET'''
-    dimension = p[2]
-    print("Array {} , dimension {}".format(p[-1], dimension))
-
-
 def p_matrix(p):
-    '''matrix : OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET'''
-    dimension = p[2]  # * p[5]
-    print("Matrix {} , dimension {}".format(p[-1], dimension))
+    '''matrix : ID OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET'''
+
+    p[0] = p[1]
+    # dimension = p[2]  # * p[5]
+    print("Matrix {} , dimension {}".format(p[-1], None))
+
+
+def p_matrix_err(p):
+    '''matrix : error'''
 
 
 # </editor-fold>
@@ -609,7 +631,7 @@ def p_var_cte(p):
                | constant
                | screen_sizes_x
                | screen_sizes_y'''
-    # p[0] = p[1]
+    p[0] = p[1]
 
 
 def p_constants(p):
@@ -633,19 +655,16 @@ def p_ctec(p):
     chubby.add_constants(p[1], Types.FLOAT)
 
 
-def p_n_var_cte_id(p):
-    '''n_var_cte_id : '''
-    try:
-        var = chubby.find_variable(p[-1])
-        chubby.add_operand(var)
-    except BigError as e:
-        e.print(p.lineno(-1))
-        raise e
-
-
 def p_sub_var_cte(p):
     '''sub_var_cte : OPEN_BRACKET expression CLOSE_BRACKET
+                   | OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
                    | empty'''
+    if p[1] is not None:
+        try:
+            chubby.add_array()
+
+        except BigError as e:
+            e.print(p.lineno(0))
 
 
 def p_type(p):

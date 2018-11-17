@@ -47,6 +47,7 @@ class Operator(IntEnum):
     END = 27
     PARAM = 28
     GETRET = 29
+    VER = 30
 
 
 class SpecialFunction(IntEnum):

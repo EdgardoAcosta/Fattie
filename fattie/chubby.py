@@ -29,6 +29,9 @@ class Chubby:
         self.active_function = ActiveFunction()
         self._count_params = 0
 
+        self._array_op = []
+        self._dimension = 0
+
         self._next_const_addr = 500000
 
     # <editor-fold desc="Variable and Function tables">
@@ -244,6 +247,22 @@ class Chubby:
         self._count_params += 1
 
     # </editor-fold>
+
+    def add_array(self):
+        array = self._top_operand()  # self._operand.pop()
+        if array.type_var in [Types.ARRAY_INT, Types.ARRAY_BOOLEAN, Types.ARRAY_CHAR, Types.ARRAY_FLOAT]:
+            self._array_op.append(array)
+            self._dimension = 0
+        else:
+            raise BigError.invalid_array("The variable {} is not an array".format(array.id_var))
+
+    def make_dim(self):
+        #
+        # exp = self._top_operand()
+        # dim_inf = FluffyVariable(None, None, 1)
+        # dim_sup = FluffyVariable(None, None, 3)
+        # self._quadruple.add(QuadruplePack(Operator.VER, exp, dim_inf, dim_sup))
+        pass
 
     # <editor-fold desc="Jumps">
     # Generate GOTOF
