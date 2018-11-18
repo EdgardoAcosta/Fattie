@@ -10,7 +10,6 @@ fattie/*.pyc
 
 # PLY
 fattie/parsetab.py
-
 # pyenv
 .python-version
 
@@ -24,7 +23,7 @@ env.bak/
 
 # Test files
 test/*
-
+*.ft
 # Pycache
 fattie/__pycache__/
 fattie/core/__pycache__/

@@ -7,7 +7,7 @@ from fattie.belly.builder import Builder
 from fattie.belly.quadruple import Operator
 from fattie.belly.exceptions import BigError
 from fattie.belly.heavyfunction import HeavyFunction
-from fattie.belly.fluffyvariable import FluffyVariable
+from fattie.belly.fluffyvariable import FluffyVariable, Dimension
 
 from fattie import cube
 
@@ -17,7 +17,7 @@ function_param = []  # Function to store parameters of a function
 more_variable = []  # Variable to store the ID of variables in same row
 fn_builder = Builder(HeavyFunction)
 var_builder = Builder(FluffyVariable)
-array = None
+actual_var = None
 
 precedence = (
     ('left', 'MINUS'),
@@ -30,8 +30,9 @@ def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
     # chubby.print_all()
-    # chubby.print_quadruple()
-    chubby.print_local_variables()
+    chubby.print_quadruple()
+    # chubby.print_global_variables()
+    # chubby.print_local_variables()
 
 
 # Generate quadruple to jump to main
@@ -155,7 +156,6 @@ def p_block_variable(p):
     try:
         global more_variable
         for var in more_variable:
-            var.print()
             chubby.add_local_variable(var)
         more_variable.clear()
     except BigError as e:
@@ -217,27 +217,67 @@ def p_n_while(p):
 
 
 def p_assignation(p):
-    '''assignation : ID n_var_cte_id assignation_variables EQUAL n_equal expression'''
+    '''assignation : var_assignation  EQUAL n_equal expression'''
     try:
         chubby.create_assignation()
     except BigError as e:
         e.print(p.lineno(1))
 
 
-def p_assignation_variables(p):
-    '''assignation_variables : OPEN_BRACKET expression CLOSE_BRACKET
-                             | OPEN_BRACKET expression CLOSE_BRACKET ID OPEN_BRACKET expression CLOSE_BRACKET
-                             | empty'''
+def p_var_assignation(p):
+    '''var_assignation : ID n_var_cte_id var_array '''
+
+
+def p_var_array(p):
+    '''var_array : OPEN_BRACKET n_array expression n_eval_dim CLOSE_BRACKET var_matrix
+                 | empty'''
+    if p[1] is not None:
+        try:
+            chubby.eval_array()
+        except BigError as e:
+            e.print(p.lineno(0))
+
+
+def p_n_array(p):
+    '''n_array : '''
+    try:
+        chubby.push_dim(actual_var, 0)
+    except BigError as e:
+        e.print(p.lineno(-1))
+
+
+def p_n_eval_dim(p):
+    '''n_eval_dim : '''
+    try:
+        chubby.eval_dim()
+    except BigError as e:
+        e.print(p.lineno(0))
+
+
+def p_var_matrix(p):
+    '''var_matrix : OPEN_BRACKET n_array_2 expression n_eval_dim CLOSE_BRACKET
+                  | empty'''
+
+
+def p_n_array_2(p):
+    '''n_array_2 : '''
+    try:
+        chubby.push_dim(actual_var, 1)
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_n_var_cte_id(p):
     '''n_var_cte_id : '''
     try:
+        global actual_var
         var = chubby.find_variable(p[-1])
         chubby.add_operand(var)
+        actual_var = var
     except BigError as e:
         e.print(p.lineno(-1))
         raise e
+    p[0] = p[-1]
 
 
 def p_n_equal(p):
@@ -372,15 +412,13 @@ def p_variable(p):
 def p_var_body(p):
     '''var_body : type save_type COLON variable_type more_variables'''
     var_builder.put('id_var', p[4])
-    var = var_builder.build()
-    more_variable.append(var)
+    more_variable.append(var_builder.build())
     var_builder.clear()
 
 
 def p_variable_type(p):
     '''variable_type : ID
-                     | array
-                     | matrix'''
+                     | array'''
     p[0] = p[1]
 
 
@@ -399,25 +437,33 @@ def p_more_variables(p):
 
     if len(p) > 2:
         var_builder.put('id_var', p[3])
-        more_variable.append(var_builder.build())
+        var = var_builder.build()
+        more_variable.append(var)
 
 
 def p_array(p):
-    '''array : ID OPEN_BRACKET expression CLOSE_BRACKET'''
-    var_builder.put('type_var', Types.ARRAY_INT)
+    '''array : ID OPEN_BRACKET ctei CLOSE_BRACKET matrix'''
+
+    # Set dim table for arrays and matrices
+    dim2 = p[5]
+    size = (p[3] + 1) * (dim2.size if dim2 is not None else 1)
+    m1 = size // (p[3] + 1)
+    dim1 = Dimension((p[3] + 1), m1)
+
+    if dim2 is not None:
+        dim2.m = m1 // dim2.size
+        dim1.next = dim2
+    var_builder.put('array', dim1)
     p[0] = p[1]
 
 
 def p_matrix(p):
-    '''matrix : ID OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET'''
-
-    p[0] = p[1]
-    # dimension = p[2]  # * p[5]
-    print("Matrix {} , dimension {}".format(p[-1], None))
-
-
-def p_matrix_err(p):
-    '''matrix : error'''
+    '''matrix : OPEN_BRACKET ctei CLOSE_BRACKET
+              | empty'''
+    if p[1] is not None:
+        p[0] = Dimension(p[2] + 1)
+    else:
+        p[0] = None
 
 
 # </editor-fold>
@@ -529,10 +575,20 @@ def p_input(p):
 def p_print(p):
     '''print : PRINT OPEN_PAREN  expression print_value  CLOSE_PAREN'''
 
+    try:
+        chubby.make_special_function("print")
+    except BigError as e:
+        e.print(p.lienno(0))
+
 
 def p_print_value(p):
     '''print_value : print_value COMMA expression
                    | empty'''
+    if p[1] is not None:
+        try:
+            chubby.make_special_function("print")
+        except BigError as e:
+            e.print(p.lienno(0))
 
 
 def p_move_up(p):
@@ -626,7 +682,7 @@ def p_sign(p):
 
 
 def p_var_cte(p):
-    '''var_cte : ID n_var_cte_id sub_var_cte
+    '''var_cte : ID n_var_cte_id var_array
                | function_call
                | constant
                | screen_sizes_x
@@ -643,28 +699,19 @@ def p_constants(p):
 def p_ctei(p):
     '''ctei : CTEI'''
     chubby.add_constants(p[1], Types.INT)
+    p[0] = p[1]
 
 
 def p_ctef(p):
     '''ctef : CTEF'''
     chubby.add_constants(p[1], Types.FLOAT)
+    p[0] = p[1]
 
 
 def p_ctec(p):
     '''ctec : CTEC'''
     chubby.add_constants(p[1], Types.FLOAT)
-
-
-def p_sub_var_cte(p):
-    '''sub_var_cte : OPEN_BRACKET expression CLOSE_BRACKET
-                   | OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
-                   | empty'''
-    if p[1] is not None:
-        try:
-            chubby.add_array()
-
-        except BigError as e:
-            e.print(p.lineno(0))
+    p[0] = p[1]
 
 
 def p_type(p):

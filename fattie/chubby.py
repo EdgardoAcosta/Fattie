@@ -1,6 +1,6 @@
 from fattie.cube import Cube
 from fattie.belly.types import Types
-from fattie.belly.quadruple import Operator
+from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.exceptions import BigError
 from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
 from fattie.belly.heavyfunction import HeavyFunction, ActiveFunction
@@ -9,6 +9,22 @@ from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
 cube = Cube()
 cube.insert_values()
 address = AddressLocation()
+
+
+class Switch:
+
+    def __init__(self, option):
+        self.option = option
+        self.cases = {}
+
+    def __call__(self, option, fn):
+        self.cases[option] = fn
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cases[self.option]()
 
 
 class Chubby:
@@ -30,6 +46,7 @@ class Chubby:
         self._count_params = 0
 
         self._array_op = []
+        self._dim_stack = []
         self._dimension = 0
 
         self._next_const_addr = 500000
@@ -112,7 +129,7 @@ class Chubby:
         if check_types:
             val_result = address.set_addr(check_types)
 
-            result = FluffyVariable(None, check_types, val_result)
+            result = FluffyVariable(None, type_var=check_types, addr=val_result)
             # Generate Quadruple
             quadruple = QuadruplePack(oper, l_operand, r_operand, result)
             # Push _quadruple to list
@@ -203,7 +220,7 @@ class Chubby:
         check_data = cube.compare_types(Operator.RETURN, return_value.type_var, self.active_function.return_type)
 
         if check_data:
-            result = FluffyVariable(None, self.active_function.return_type,
+            result = FluffyVariable(None, type_var=self.active_function.return_type,
                                     addr=address.set_addr(kind=self.active_function.return_type))
 
             quadruple = QuadruplePack(Operator.RETURN, l_value=return_value, r_value=None, result=result)
@@ -218,7 +235,7 @@ class Chubby:
         self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
     def function_create_era(self):
-        size_era = FluffyVariable(None, None, address.calculate_era())
+        size_era = FluffyVariable(None, None, addr=address.calculate_era())
         self._quadruple.add(QuadruplePack(Operator.ERA, None, None, size_era))
 
     def function_validate_params(self, empty_params=False):
@@ -242,27 +259,68 @@ class Chubby:
         if argument.type_var != fun.params[self._count_params].type_var:
             raise BigError.mismatch_params(
                 "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
-        param = FluffyVariable(None, None, self._count_params)
+        param = FluffyVariable(None, None, addr=self._count_params)
         self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
         self._count_params += 1
 
     # </editor-fold>
 
-    def add_array(self):
-        array = self._top_operand()  # self._operand.pop()
-        if array.type_var in [Types.ARRAY_INT, Types.ARRAY_BOOLEAN, Types.ARRAY_CHAR, Types.ARRAY_FLOAT]:
-            self._array_op.append(array)
-            self._dimension = 0
-        else:
-            raise BigError.invalid_array("The variable {} is not an array".format(array.id_var))
+    # <editor-fold desc="Arrays">
+    def _top_dim(self):
+        return self._dim_stack[-1]
 
-    def make_dim(self):
-        #
-        # exp = self._top_operand()
-        # dim_inf = FluffyVariable(None, None, 1)
-        # dim_sup = FluffyVariable(None, None, 3)
-        # self._quadruple.add(QuadruplePack(Operator.VER, exp, dim_inf, dim_sup))
-        pass
+    def push_dim(self, var, dim):
+
+        if dim == 0:
+            print(var.array.parse())
+            self._dim_stack.append(var.array)
+        else:
+            d = self._top_dim()
+            self._dim_stack.append(d.next)
+
+        # with Switch(1) as case:
+        #     case(1, lambda: print("one"))
+
+    def eval_dim(self):
+        exp = self._operand.pop()
+        dim = self._top_dim()
+        # print(exp.parse())
+        # print(dim.parse())
+        if exp is not None:
+
+            dimS = FluffyVariable(None, Types.INT, addr=dim.size)
+            dimM = FluffyVariable(None, Types.INT, addr=dim.m)
+            tem = FluffyVariable(None, exp.type_var, addr=address.set_addr(exp.type_var))
+            #  Validate dim and generate VER
+            self._quadruple.add(QuadruplePack(Operator.VER, exp, 0, dimS))
+            self._quadruple.add(QuadruplePack(Operator.TIMES, dimM, exp, tem))
+            self._operand.append(tem)
+        else:
+            raise BigError("Error in array expression")
+
+    def eval_array(self):
+
+        dim = self._dim_stack.pop()
+
+        while self._top_dim().var == dim.var:
+            _ = self._dim_stack.pop()
+            op = self._operand.pop()
+            op2 = self._operand.pop()
+            temp = FluffyVariable(None, None, addr=address.set_addr(op.type_var))
+            q = QuadruplePack(Operator.PLUS, op, op2, temp)
+            self._quadruple.add(q)
+            self._operand.append(temp)
+
+        var = self.find_variable(dim.var)
+        base = FluffyVariable(None, var.type_var, addr=var.addr)
+        dim = self._operand.pop()
+        temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT))
+
+        # TODO: marcar temp como accesso directo
+        self._quadruple.add(QuadruplePack(Operator.PLUS, base, dim, temp))
+        self._operand.append(temp)
+
+    # </editor-fold>
 
     # <editor-fold desc="Jumps">
     # Generate GOTOF
@@ -300,12 +358,12 @@ class Chubby:
     # Make GOSUB
     def gosub(self):
         self._era.append(self._quadruple.index)
-        function_dir = FluffyVariable(None, None, self.active_function.start_position)
+        function_dir = FluffyVariable(None, None, addr=self.active_function.start_position)
         self._quadruple.add(QuadruplePack(Operator.GOSUB, None, None, function_dir))
 
         if self.active_function.return_type is not None:
             temp = FluffyVariable(None, self.active_function.return_type
-                                  , address.set_addr(self.active_function.return_type))
+                                  , addr=address.set_addr(self.active_function.return_type))
             self._operand.append(temp)
             self._quadruple.add(QuadruplePack(Operator.GETRET, None, None, temp))
 
@@ -317,7 +375,8 @@ class Chubby:
             self._constants[value] = self._next_const_addr
             self._next_const_addr += 1
             const = FluffyVariable(None, type_var=var_type, addr=self._constants[value])
-            quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, value), r_value=None,
+            quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, addr=value),
+                                      r_value=None,
                                       result=const)
 
             self.add_operand(const)
@@ -341,11 +400,30 @@ class Chubby:
         raise BigError("Operator {} is not a valid one".format(op))
 
     @staticmethod
+    def text_to_special_operator(op):
+        for e in list(SpecialFunction):
+            if op.upper() == e.name:
+                return e
+        raise BigError("Operator {} is not a valid one".format(op))
+
+    @staticmethod
     def text_to_type(tp):
         for t in list(Types):
             if tp.upper() == t.name:
                 return t
         raise BigError("Type {} is not a valid one".format(tp))
+
+    # </editor-fold>
+
+    # <editor-fold desc="Special Functions">
+    def make_special_function(self, action_name):
+        action_name = self.text_to_special_operator(action_name)
+        exp = self._operand.pop()
+
+        if exp is None:
+            raise BigError("ERROR")
+        q = QuadruplePack(action_name, None, None, exp)
+        self._quadruple.add(q)
 
     # </editor-fold>
 

@@ -21,11 +21,12 @@ fun fun2(Int: parm3, Int: parm5):Int=>
 main =>
 		var Char : test0, test4, test10
 		var Int : test11, test12
-		var Int : arr[12]
+		var Int : arr[1]
 		var Boolean : param1
+		print(test11)
 
-		test11 = arr[test11]
-
+		arr[test11] = test11
+        test11 = arr[1]
 
 		$Checar NEW_LINE en assignacion en el block, al final de cod no funciona
         test11 = fun1(param1)

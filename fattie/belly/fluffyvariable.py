@@ -40,7 +40,7 @@ class AddressLocation:
         return self.local_address[kind]
 
     def set_addr(self, kind, g_var=False):
-        kind = equivalent.get(kind,kind)
+        kind = equivalent.get(kind, kind)
         if kind not in self.local_address:
             raise BigError("Error type not defined")
         # Global variable
@@ -68,10 +68,17 @@ class AddressLocation:
 # Class to check if a variable exist on the variable table and add new variable if not exit to table
 class FluffyVariable:
     # Init variables of class
-    def __init__(self, id_var, type_var, addr=None):
+    def __init__(self, id_var, type_var, array=None, addr=None):
         self.id_var = id_var
         self.type_var = type_var
         self.addr = addr
+        self.array = array
+
+        if self.array is not None:
+            temp = self.array
+            while temp is not None:
+                temp.var = self
+                temp = temp.next
 
     def __setitem__(self, instance, value):
         self.instance = value
@@ -81,6 +88,7 @@ class FluffyVariable:
             "id_var": self.id_var,
             "type_var": self.type_var.name if self.type_var is not None else '',
             "addr": self.addr,  # if self.addr is not None else '',
+            "array": self.array,
         })
 
     # For test proposes only
@@ -89,4 +97,29 @@ class FluffyVariable:
             "id_var": self.id_var,
             "type_var": self.type_var.name if self.type_var is not None else '',
             "addr": self.addr,  # if self.addr is not None else '',
+            "array": [item.parse() for item in (self.array if self.array is not None else [])]
+
+        })
+
+
+class Dimension:
+    def __init__(self, size, m=None, var=None):
+        self.size = size
+        self.m = m
+        self.var = var
+        self.next = None
+
+    def print(self):
+        print({
+            "size": self.size,
+            "m": self.m,
+            "var": self.var
+        })
+
+    def parse(self):
+        return ({
+            "size": self.size,
+            "m": self.m,
+            "var": self.var
+
         })
