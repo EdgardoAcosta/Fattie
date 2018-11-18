@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 from fattie.cube import Cube
 from fattie.belly.types import Types
-from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
+from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.heavyfunction import HeavyFunction, ActiveFunction
-from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
+from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation, Access
+from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
 
 cube = Cube()
 cube.insert_values()
@@ -25,6 +26,9 @@ class Switch:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.cases[self.option]()
+
+        # with Switch(1) as case:
+        #     case(1, lambda: print("one"))
 
 
 class Chubby:
@@ -75,7 +79,7 @@ class Chubby:
         elif id_var in self._global_variable:
             return self._global_variable.get(id_var)
         else:
-            raise BigError.undefined_variable('{}'.format(id_var))
+            raise BigError.undefined_variable('{}'.format())
 
     def clean_variables_from_function(self):
         self._local_variable.clear()
@@ -267,25 +271,35 @@ class Chubby:
 
     # <editor-fold desc="Arrays">
     def _top_dim(self):
+        """
+            Check top of the dimension stack, if empty `Return` None,
+             else `Return` the dimension of type Dimension
+        """
+        if len(self._dim_stack) == 0:
+            return None
         return self._dim_stack[-1]
 
     def push_dim(self, var, dim):
+        """
+            Push the dimension to the dimension stack
+        """
 
         if dim == 0:
-            print(var.array.parse())
             self._dim_stack.append(var.array)
         else:
             d = self._top_dim()
             self._dim_stack.append(d.next)
 
-        # with Switch(1) as case:
-        #     case(1, lambda: print("one"))
-
     def eval_dim(self):
+        """
+              Function to evaluate the expression for each dimension.
+
+              Generates the quadruple of VER (Verification of dimension) and the multiplication of the expression times
+              the m value
+        """
         exp = self._operand.pop()
         dim = self._top_dim()
-        # print(exp.parse())
-        # print(dim.parse())
+
         if exp is not None:
 
             dimS = FluffyVariable(None, Types.INT, addr=dim.size)
@@ -299,24 +313,31 @@ class Chubby:
             raise BigError("Error in array expression")
 
     def eval_array(self):
+        """
+            Function to evaluate the array for each dimension.
+
+            Generates the quadruples for the sum of each dimension, and generates the quadruple for sum of the BASE
+
+        """
 
         dim = self._dim_stack.pop()
 
-        while self._top_dim().var == dim.var:
-            _ = self._dim_stack.pop()
-            op = self._operand.pop()
-            op2 = self._operand.pop()
-            temp = FluffyVariable(None, None, addr=address.set_addr(op.type_var))
-            q = QuadruplePack(Operator.PLUS, op, op2, temp)
-            self._quadruple.add(q)
-            self._operand.append(temp)
+        if self._top_dim() is not None:
 
-        var = self.find_variable(dim.var)
-        base = FluffyVariable(None, var.type_var, addr=var.addr)
+            while (self._top_dim().var == dim.var) if self._top_dim() is not None else False:
+                _ = self._dim_stack.pop()
+                op = self._operand.pop()
+                op2 = self._operand.pop()
+                temp = FluffyVariable(None, None, addr=address.set_addr(op.type_var))
+                q = QuadruplePack(Operator.PLUS, op, op2, temp)
+                self._quadruple.add(q)
+                self._operand.append(temp)
+
+        base = FluffyVariable(None, dim.var.type_var, addr=dim.var.addr)
         dim = self._operand.pop()
-        temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT))
+        # Mark access to variables as an indirect
+        temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT), access=Access.Indirect)
 
-        # TODO: marcar temp como accesso directo
         self._quadruple.add(QuadruplePack(Operator.PLUS, base, dim, temp))
         self._operand.append(temp)
 

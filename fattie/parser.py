@@ -30,9 +30,9 @@ def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
     # chubby.print_all()
-    chubby.print_quadruple()
-    # chubby.print_global_variables()
-    # chubby.print_local_variables()
+    # chubby.print_quadruple()
+    chubby.print_global_variables()
+    chubby.print_local_variables()
 
 
 # Generate quadruple to jump to main

@@ -1,5 +1,5 @@
+from enum import Enum
 from fattie.belly.types import Types
-from fattie.belly.exceptions import BigError
 
 local_addr = {
     Types.INT: 000000,
@@ -65,14 +65,23 @@ class AddressLocation:
         self.local_address = local_addr.copy()
 
 
+class Access(Enum):
+    Direct = 1
+    Indirect = 2
+
+
+from fattie.belly.exceptions import BigError
+
+
 # Class to check if a variable exist on the variable table and add new variable if not exit to table
 class FluffyVariable:
     # Init variables of class
-    def __init__(self, id_var, type_var, array=None, addr=None):
+    def __init__(self, id_var, type_var, array=None, access=Access.Direct, addr=None):
         self.id_var = id_var
         self.type_var = type_var
         self.addr = addr
         self.array = array
+        self.access = access
 
         if self.array is not None:
             temp = self.array
@@ -83,22 +92,24 @@ class FluffyVariable:
     def __setitem__(self, instance, value):
         self.instance = value
 
+    def parse(self):
+        # print(self.array.parse() if self.array is not None else [])
+        return ({
+            "id_var": self.id_var,
+            "type_var": self.type_var.name if self.type_var is not None else '',
+            "addr": self.addr,  # if self.addr is not None else '',
+            "array": self.array.parse() if self.array is not None else [],
+            "access": self.access.name
+
+        })
+
+    # For test proposes only
     def print(self):
         print({
             "id_var": self.id_var,
             "type_var": self.type_var.name if self.type_var is not None else '',
             "addr": self.addr,  # if self.addr is not None else '',
-            "array": self.array,
-        })
-
-    # For test proposes only
-    def parse(self):
-        return ({
-            "id_var": self.id_var,
-            "type_var": self.type_var.name if self.type_var is not None else '',
-            "addr": self.addr,  # if self.addr is not None else '',
-            "array": [item.parse() for item in (self.array if self.array is not None else [])]
-
+            "array": self.array.parse() if self.array is not None else [],
         })
 
 
@@ -113,13 +124,16 @@ class Dimension:
         print({
             "size": self.size,
             "m": self.m,
-            "var": self.var
+            "var": self.var.parse() if self.var is not None else self.var
         })
 
     def parse(self):
         return ({
             "size": self.size,
             "m": self.m,
-            "var": self.var
-
+            "var": {
+                "id_var": self.var.id_var,
+                "type_var": self.var.type_var.name if self.var.type_var is not None else '',
+                "addr": self.var.addr
+            }
         })
