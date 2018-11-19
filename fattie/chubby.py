@@ -446,10 +446,11 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="Special Functions">
-    def make_special_function(self, action_name):
+    def make_special_function(self, action_name, expected_type=None):
         """
         Generic function for crating almost all special function
         :param action_name:
+        :param expected_type:
         :return: None, Insert quadruple in stack
         """
         action_name = self.text_to_special_operator(action_name)
@@ -457,29 +458,90 @@ class Chubby:
         exp = self._operand.pop()
 
         if exp is None:
-            raise BigError("ERROR")
+            raise BigError("Error getting value for function")
+
+        if expected_type is not None:
+            if exp.type_var not in expected_type:
+                print(action_name)
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(action_name.name,
+                                                                              [item.name for item in expected_type]))
+
         q = QuadruplePack(action_name, None, None, exp)
         self._quadruple.add(q)
 
-    def make_special_function_circle(self, exp1, exp2=None, exp3=None):
+    def make_special_function_clean(self):
+        """
+        Make quadruple to clean screen
+
+        :return: None, Insert quadruple in stack
+        """
+        self._quadruple.add(QuadruplePack(SpecialFunction.CLEAN))
+
+    def make_special_function_circle(self, exp1, exp2=None, exp3=None, expected_type=None):
         """
         Make quadruple for circle, can accept 1, 2 or 3 parameters
         :param exp1:
         :param exp2:
         :param exp3:
+        :param expected_type:
         :return: None, Insert quadruple in stack
         """
         pass
 
-    def make_special_function_square(self, exp1, exp2, exp3=None):
+    def make_special_function_square(self, exp1, exp2, exp3=None, expected_type=None):
         """
         Make quadruple for square, accept 1, 2 and a 3 as optional
         :param exp1:
         :param exp2:
         :param exp3:
+        :param expected_type:
         :return:
         """
         pass
+
+    def make_special_function_start_point(self, expected_type=None):
+        """
+        Make quadruple for start point, define the starting point of the pencil
+        :param expected_type:
+        :return:
+        """
+        x = self._operand.pop()
+        y = self._operand.pop()
+
+        if expected_type is not None:
+            if x.type_var not in expected_type or y.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.STARTPOSITION, None, x, y))
+
+    def make_special_function_screen_size(self, sizes):
+        """
+        Make quadruple for start screen size (x and y), define the starting point of the pencil
+        :param sizes:
+        :return:
+        """
+
+        self._quadruple.add(QuadruplePack(sizes))
+
+    def make_special_function_go(self, expected_type=None):
+        """
+        Make quadruple to move to an x,y position
+        :param expected_type:
+        :return:
+        """
+        x = self._operand.pop()
+        y = self._operand.pop()
+
+        if expected_type is not None:
+            if x.type_var not in expected_type or y.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.GO, None, x, y))
 
     # </editor-fold>
 

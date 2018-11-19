@@ -4,9 +4,9 @@ from fattie.chubby import Chubby
 from fattie.scanner import tokens
 from fattie.belly.types import Types
 from fattie.belly.builder import Builder
-from fattie.belly.quadruple import Operator
 from fattie.belly.exceptions import BigError
 from fattie.belly.heavyfunction import HeavyFunction
+from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.fluffyvariable import FluffyVariable, Dimension
 
 from fattie import cube
@@ -29,7 +29,7 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    chubby.print_all()
+    # chubby.print_all()
     # chubby.print_quadruple()
     # chubby.print_global_variables()
     # chubby.print_local_variables()
@@ -576,28 +576,18 @@ def p_input(p):
 
 
 def p_print(p):
-    '''print : PRINT OPEN_PAREN  expression print_value CLOSE_PAREN'''
+    '''print : PRINT OPEN_PAREN  expression  CLOSE_PAREN'''
 
     try:
-        chubby.make_special_function("print")
+        chubby.make_special_function(p[1])
     except BigError as e:
         e.print(p.lienno(0))
-
-
-def p_print_value(p):
-    '''print_value : print_value COMMA expression
-                   | empty'''
-    if p[1] is not None:
-        try:
-            chubby.make_special_function("print")
-        except BigError as e:
-            e.print(p.lienno(0))
 
 
 def p_move_up(p):
     '''move_up : MOVEUP OPEN_PAREN  expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -605,7 +595,7 @@ def p_move_up(p):
 def p_move_down(p):
     '''move_down : MOVEDOWN OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -613,7 +603,7 @@ def p_move_down(p):
 def p_move_right(p):
     '''move_right : MOVERIGHT OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -621,7 +611,7 @@ def p_move_right(p):
 def p_move_left(p):
     '''move_left : MOVELEFT OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -629,7 +619,7 @@ def p_move_left(p):
 def p_angle(p):
     '''angle :  ANGLE OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -637,7 +627,7 @@ def p_angle(p):
 def p_color(p):
     '''color : COLOR OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.CHAR])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -646,7 +636,7 @@ def p_circle(p):
     '''circle : CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
     # TODO: Make this
     try:
-        chubby.make_special_function_circle(p[1])
+        chubby.make_special_function_circle(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -661,7 +651,7 @@ def p_square(p):
     '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
     # TODO: Make this
     try:
-        chubby.make_special_function_square(p[3], p[5], p[6])
+        chubby.make_special_function_square(p[3], p[5], p[6], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -676,9 +666,9 @@ def p_sub_square(p):
 
 
 def p_clean(p):
-    '''clean : CLEAN OPEN_PAREN expression CLOSE_PAREN'''
+    '''clean : CLEAN OPEN_PAREN CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function_clean()
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -686,31 +676,47 @@ def p_clean(p):
 def p_draw(p):
     '''draw : DRAW OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.BOOLEAN])
     except BigError as e:
         e.print(p.lienno(1))
 
 
 def p_start_point(p):
     '''start_point : STARTPOSITION OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function_start_point([Types.INT])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_screen_sizes_x(p):
-    '''screen_sizes_x :  SCREENSIZESX OPEN_PAREN CLOSE_PAREN'''
+    '''screen_sizes_x : SCREENSIZESX OPEN_PAREN CLOSE_PAREN'''
+    try:
+        chubby.make_special_function_screen_size(SpecialFunction.SCREENSIZESX)
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_screen_sizes_y(p):
     '''screen_sizes_y :  SCREENSIZESY OPEN_PAREN CLOSE_PAREN'''
+    try:
+        chubby.make_special_function_screen_size(SpecialFunction.SCREENSIZESY)
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_go(p):
     '''go :  GO OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function_go([Types.INT])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_fibonacci(p):
     '''fibonacci : FIBONACCI OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -718,7 +724,7 @@ def p_fibonacci(p):
 def p_factorial(p):
     '''factorial : FACTORIAL OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
         e.print(p.lienno(1))
 
@@ -726,7 +732,7 @@ def p_factorial(p):
 def p_sleep(p):
     '''sleep :  SLEEP OPEN_PAREN expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
         e.print(p.lienno(1))
 

@@ -3,6 +3,7 @@
 # IntelliJ project files
 .idea/*
 out
+.gitignore
 
 # Phyton
 *.out

@@ -3,16 +3,21 @@ fun fun1(Boolean: param1):Int=>
 		var Int: test11,variableTest
 		if param1 =>
 		    test11 = test11 + test11
+
+		test11 = fun1(param1)
 		return test11
 
 fun fun2(Int: parm3, Int: parm5):Int=>
 		var Char: test11,variableTest
 		var Boolean: v1
+		var Int : arr[1][2]
+
 		test11 = variableTest
 		variableTest = test11
 
 		if parm3 notequal parm5 =>
 		    parm5 = fun2(parm3,parm3)
+		    arr[parm3][1] = parm5
 		else =>
 		    parm5 = parm3 + 1
 
@@ -21,13 +26,13 @@ fun fun2(Int: parm3, Int: parm5):Int=>
 main =>
 		var Char : test0, test4, test10
 		var Int : test11, test12
-		var Int : arr[1][2]
+
 		var Boolean : param1
 		test11 = 1
 
 		input(1)
 		print(test11)
-		arr[test11][1] = test11
+		moveUp(test11)
 
-		test11 = fun1(param1)
+
 
