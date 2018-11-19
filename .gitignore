@@ -3,13 +3,14 @@
 # IntelliJ project files
 .idea/*
 out
+.gitignore
 
 # Phyton
 *.out
+fattie/*.pyc
 
 # PLY
 fattie/parsetab.py
-
 # pyenv
 .python-version
 
@@ -23,7 +24,8 @@ env.bak/
 
 # Test files
 test/*
-
+*.ft
+# Pycache
 fattie/__pycache__/
 fattie/core/__pycache__/
 fattie/belly/__pycache__/

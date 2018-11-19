@@ -9,8 +9,6 @@ reserved = {
     "if": "IF",
     "else": "ELSE",
     "while": "WHILE",
-    "for": "FOR",
-    "to": "TO",
 
     "input": "INPUT",
     "print": "PRINT",
@@ -32,15 +30,15 @@ reserved = {
     "factorial": "FACTORIAL",
     "sleep": "SLEEP",
 
-    "and": "AND",
-    "or": "OR",
-    "not": "NOT",
+    # "and": "AND",
+    # "or": "OR",
+    # "not": "NOT",
     "Boolean": "BOOLEAN",
     "Int": "INT",
     "Float": "FLOAT",
     "Char": "CHAR",
-    "True": "TRUE",
-    "False": "FALSE",
+    # "True": "TRUE",
+    # "False": "FALSE",
 
     "equals": "EQUALS",
     "less": "LESS",
@@ -54,7 +52,7 @@ reserved = {
 tokens = [
              'ID', 'CTEI', 'CTEF', 'CTEC', 'EQUAL', 'COLON', 'COMMA', 'NEW_LINE', 'OPEN_BRACKET',
              'CLOSE_BRACKET', 'OPEN_PAREN', 'CLOSE_PAREN', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'INDENT', 'DEDENT',
-             'ARROW', 'ARRAY', 'MATRIX'
+             'ARROW'
          ] + list(reserved.values())
 
 t_EQUAL = r'\='
@@ -69,14 +67,18 @@ t_MINUS = r'\-'
 t_TIMES = r'\*'
 t_DIVIDE = r'\/'
 t_ARROW = r'\=\>'
-t_ARRAY = r'\[[0-9]*\]'
-t_MATRIX = r'\[[0-9]*\]\[[0-9]*\]'
 t_ignore = ' '
 
 
-def t_ignore_SINGLE_COMMENT(t):
-    r'\#.*\n'
+def t_comment(t):
+    r'\$.*'
+
     t.lexer.lineno += 1
+
+
+def t_ignore_multi_comment(t):
+    r'\$\*(.|\n)*\*\$'
+    pass
 
 
 def t_ID(t):
@@ -100,10 +102,9 @@ def t_CTEF(t):
     return t
 
 
-# Todo: Check rexe for char
 # Define a variable Chart
 def t_CTEC(t):
-    r'\".*\"$'
+    r'\".*\"'
     t.value = t.value[1:-1]
     return t
 
