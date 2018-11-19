@@ -368,6 +368,7 @@ class Chubby:
 
     # Fill jumps
     def _fill(self, line=0):
+
         actual_quadruple = self._jumps.pop()
         if actual_quadruple is None:
             raise BigError("Error, pending quadruples")
@@ -395,13 +396,17 @@ class Chubby:
         if value not in self._constants:
             self._constants[value] = self._next_const_addr
             self._next_const_addr += 1
-            const = FluffyVariable(None, type_var=var_type, addr=self._constants[value])
+            const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
             quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, addr=value),
                                       r_value=None,
                                       result=const)
 
             self.add_operand(const)
             self._quadruple.add(quadruple)
+
+        else:
+            const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
+            self.add_operand(const)
 
         return self._constants[value]
 
@@ -434,11 +439,21 @@ class Chubby:
                 return t
         raise BigError("Type {} is not a valid one".format(tp))
 
+    def make_output(self):
+        file = open("fat.ft", "w")
+        self._quadruple.write_to_file(file)
+
     # </editor-fold>
 
     # <editor-fold desc="Special Functions">
     def make_special_function(self, action_name):
+        """
+        Generic function for crating almost all special function
+        :param action_name:
+        :return: None, Insert quadruple in stack
+        """
         action_name = self.text_to_special_operator(action_name)
+
         exp = self._operand.pop()
 
         if exp is None:
@@ -446,11 +461,27 @@ class Chubby:
         q = QuadruplePack(action_name, None, None, exp)
         self._quadruple.add(q)
 
-    # </editor-fold>
+    def make_special_function_circle(self, exp1, exp2=None, exp3=None):
+        """
+        Make quadruple for circle, can accept 1, 2 or 3 parameters
+        :param exp1:
+        :param exp2:
+        :param exp3:
+        :return: None, Insert quadruple in stack
+        """
+        pass
 
-    def make_output(self):
-        file = open("fat.ft", "w")
-        self._quadruple.write_to_file(file)
+    def make_special_function_square(self, exp1, exp2, exp3=None):
+        """
+        Make quadruple for square, accept 1, 2 and a 3 as optional
+        :param exp1:
+        :param exp2:
+        :param exp3:
+        :return:
+        """
+        pass
+
+    # </editor-fold>
 
     # <editor-fold desc="Prints for test">
 

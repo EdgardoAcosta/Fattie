@@ -70,13 +70,14 @@ t_ARROW = r'\=\>'
 t_ignore = ' '
 
 
-def t_COMMENT(t):
-    r'\$.*([\s]*)?\n*'
+def t_comment(t):
+    r'\$.*'
+
     t.lexer.lineno += 1
 
 
 def t_ignore_multi_comment(t):
-    r'\$\*(.|\n)*\*\$?'
+    r'\$\*(.|\n)*\*\$'
     pass
 
 
@@ -101,10 +102,9 @@ def t_CTEF(t):
     return t
 
 
-# Todo: Check rexe for char
 # Define a variable Chart
 def t_CTEC(t):
-    r'\".*\"$'
+    r'\".*\"'
     t.value = t.value[1:-1]
     return t
 

@@ -29,16 +29,19 @@ precedence = (
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
     p[0] = "COMPILED"
-    # chubby.print_all()
+    chubby.print_all()
     # chubby.print_quadruple()
-    chubby.print_global_variables()
-    chubby.print_local_variables()
+    # chubby.print_global_variables()
+    # chubby.print_local_variables()
 
 
 # Generate quadruple to jump to main
 def p_n_goto_main(p):
     '''n_goto_main : '''
-    chubby.jump_main()
+    try:
+        chubby.jump_main()
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_empty_spaces(p):
@@ -377,7 +380,7 @@ def p_n_operator(p):
 
 
 def p_factor(p):
-    '''factor : unary sub_factor '''
+    '''factor : unary var_cte '''
 
 
 def p_unary(p):
@@ -386,10 +389,6 @@ def p_unary(p):
 
     if p[1] is not None:
         chubby.add_operator(Operator.UMINUS)
-
-
-def p_sub_factor(p):
-    '''sub_factor : var_cte'''
 
 
 def p_term_factor(p):
@@ -570,10 +569,14 @@ def p_special_fun(p):
 
 def p_input(p):
     '''input : INPUT OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(0))
 
 
 def p_print(p):
-    '''print : PRINT OPEN_PAREN  expression print_value  CLOSE_PAREN'''
+    '''print : PRINT OPEN_PAREN  expression print_value CLOSE_PAREN'''
 
     try:
         chubby.make_special_function("print")
@@ -592,31 +595,60 @@ def p_print_value(p):
 
 
 def p_move_up(p):
-    '''move_up :  MOVEUP OPEN_PAREN  expression CLOSE_PAREN'''
+    '''move_up : MOVEUP OPEN_PAREN  expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_move_down(p):
-    '''move_down :  MOVEDOWN OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_down : MOVEDOWN OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_move_right(p):
-    '''move_right :  MOVERIGHT OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_right : MOVERIGHT OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_move_left(p):
-    '''move_left :  MOVELEFT OPEN_PAREN expression CLOSE_PAREN'''
+    '''move_left : MOVELEFT OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_angle(p):
     '''angle :  ANGLE OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_color(p):
-    '''color :  COLOR OPEN_PAREN expression CLOSE_PAREN'''
+    '''color : COLOR OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_circle(p):
-    '''circle :  CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
+    '''circle : CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
+    # TODO: Make this
+    try:
+        chubby.make_special_function_circle(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_sub_circle(p):
@@ -627,19 +659,36 @@ def p_sub_circle(p):
 
 def p_square(p):
     '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
+    # TODO: Make this
+    try:
+        chubby.make_special_function_square(p[3], p[5], p[6])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_sub_square(p):
-    '''sub_square :  COMMA expression
+    '''sub_square : COMMA expression
                   | empty'''
+    if p[1] is not None:
+        p[0] = p[2]
+    else:
+        p[0] = None
 
 
 def p_clean(p):
-    '''clean :  CLEAN OPEN_PAREN expression CLOSE_PAREN'''
+    '''clean : CLEAN OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_draw(p):
-    '''draw :  DRAW OPEN_PAREN expression'''
+    '''draw : DRAW OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_start_point(p):
@@ -660,14 +709,26 @@ def p_go(p):
 
 def p_fibonacci(p):
     '''fibonacci : FIBONACCI OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_factorial(p):
     '''factorial : FACTORIAL OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 def p_sleep(p):
     '''sleep :  SLEEP OPEN_PAREN expression CLOSE_PAREN'''
+    try:
+        chubby.make_special_function(p[1])
+    except BigError as e:
+        e.print(p.lienno(1))
 
 
 # </editor-fold>
@@ -686,7 +747,8 @@ def p_var_cte(p):
                | function_call
                | constant
                | screen_sizes_x
-               | screen_sizes_y'''
+               | screen_sizes_y
+               | input'''
     p[0] = p[1]
 
 
@@ -694,6 +756,7 @@ def p_constants(p):
     '''constant : ctei
                 | ctef
                 | ctec'''
+    p[0] = p[1]
 
 
 def p_ctei(p):
@@ -710,7 +773,7 @@ def p_ctef(p):
 
 def p_ctec(p):
     '''ctec : CTEC'''
-    chubby.add_constants(p[1], Types.FLOAT)
+    chubby.add_constants(p[1], Types.CHAR)
     p[0] = p[1]
 
 

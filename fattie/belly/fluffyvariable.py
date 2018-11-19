@@ -7,17 +7,7 @@ local_addr = {
     Types.CHAR: 200000,
     Types.BOOLEAN: 300000
 }
-equivalent = {
-    Types.ARRAY_INT: Types.INT,
-    Types.ARRAY_FLOAT: Types.FLOAT,
-    Types.ARRAY_CHAR: Types.CHAR,
-    Types.ARRAY_BOOLEAN: Types.BOOLEAN,
-    Types.MATRIX_INT: Types.INT,
-    Types.MATRIX_FLOAT: Types.FLOAT,
-    Types.MATRIX_CHAR: Types.CHAR,
-    Types.MATRIX_BOOLEAN: Types.BOOLEAN
 
-}
 global_addr = {
     Types.INT: 1000000,
     Types.FLOAT: 1100000,
@@ -40,7 +30,6 @@ class AddressLocation:
         return self.local_address[kind]
 
     def set_addr(self, kind, g_var=False):
-        kind = equivalent.get(kind, kind)
         if kind not in self.local_address:
             raise BigError("Error type not defined")
         # Global variable
@@ -57,7 +46,7 @@ class AddressLocation:
     def calculate_era(self):
         result = {}
         for e in self.local_address:
-            result[e] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
+            result[e.name] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
                                                                                          local_addr[e]
         return result
 
@@ -97,9 +86,9 @@ class FluffyVariable:
         return ({
             "id_var": self.id_var,
             "type_var": self.type_var.name if self.type_var is not None else '',
-            "addr": self.addr,  # if self.addr is not None else '',
+            "access": self.access.name,
             "array": self.array.parse() if self.array is not None else [],
-            "access": self.access.name
+            "addr": self.addr,  # if self.addr is not None else '',
 
         })
 

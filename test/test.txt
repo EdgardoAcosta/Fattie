@@ -23,10 +23,11 @@ main =>
 		var Int : test11, test12
 		var Int : arr[1][2]
 		var Boolean : param1
+		test11 = 1
+
+		input(1)
 		print(test11)
-
 		arr[test11][1] = test11
-        test11 = arr[1]
 
-		$Checar NEW_LINE en assignacion en el block, al final de cod no funciona
-        test11 = fun1(param1)
+		test11 = fun1(param1)
+
