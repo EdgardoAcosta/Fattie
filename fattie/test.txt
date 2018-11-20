@@ -1,0 +1,4 @@
+var Int: test8
+
+main =>
+    var Int : test0
