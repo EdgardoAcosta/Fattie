@@ -11,8 +11,7 @@ from fattie.belly.fluffyvariable import FluffyVariable, Dimension
 
 from fattie import cube
 
-chubby = Chubby()
-
+chubby = Chubby(True)
 function_param = []  # Function to store parameters of a function
 more_variable = []  # Variable to store the ID of variables in same row
 fn_builder = Builder(HeavyFunction)
@@ -568,11 +567,23 @@ def p_special_fun(p):
 
 
 def p_input(p):
-    '''input : INPUT OPEN_PAREN  CLOSE_PAREN'''
+    '''input : INPUT OPEN_PAREN expression_input CLOSE_PAREN'''
     try:
         chubby.make_special_function_input()
     except BigError as e:
         e.print(p.lienno(0))
+
+
+def p_expression_input(p):
+    '''expression_input : ID
+                        | ID OPEN_BRACKET expression CLOSE_BRACKET
+                        | ID OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET '''
+
+    try:
+        var = chubby.find_variable(p[1])
+        chubby.add_operand(var)
+    except BigError as e:
+        e.print(p.lineno(1))
 
 
 def p_print(p):
@@ -715,7 +726,7 @@ def p_factorial(p):
 
 
 def p_sleep(p):
-    '''sleep :  SLEEP OPEN_PAREN expression CLOSE_PAREN'''
+    '''sleep : SLEEP OPEN_PAREN expression CLOSE_PAREN'''
     try:
         chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
@@ -738,8 +749,7 @@ def p_var_cte(p):
                | function_call
                | constant
                | screen_sizes_x
-               | screen_sizes_y
-               | input'''
+               | screen_sizes_y'''
     p[0] = p[1]
 
 

@@ -2,11 +2,22 @@
 main =>
 		var Char : test0, test4, test10
 		var Int : test11, test12
+		var Float: ft
+		var Boolean: bt
 
-		test12 = 1
-		test11 = 1
+		test11 = 2
+		test12 = test11 + 1
+		input(test12)
+		square(test12,90)
+		clean()
 
-		print(test11)
+		square(test12,90)
+
+		sleep(test11)
+
+
+		print(test12)
+		print("Value of test12 -> ")
 		moveUp(test11)
 
 

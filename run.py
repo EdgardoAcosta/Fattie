@@ -1,12 +1,14 @@
 import sys
-from fattie.parser import parser_fattie, chubby
 from fattie.scanner import fattie_lexer
-from VirtualBigMachine import bigMachine
+from VirtualBigMachine import BigMachine
+from fattie.parser import parser_fattie, chubby
+from fattie import easter_egg
 
 
 def _main():
     data = ''
     # Check if file exist for test
+
     if len(sys.argv) > 1:
         file = sys.argv[1]
         try:
@@ -16,19 +18,24 @@ def _main():
             print(EOFError)
     else:
         print("No file to test found")
+        sys.exit(1)
         # print("-> ")
         # for line in sys.stdin:
         #     data = data + line
     _eat(data)
 
 
-def _eat(data):
+def _eat(data, easter=False):
     parser = parser_fattie.parse(data, lexer=fattie_lexer, debug=False, tracking=True)
     if parser == "COMPILED":
         print("Compiled successfully ")
         chubby.make_output()
 
-        bigMachine()
+        if easter: print(easter_egg)
+
+        big_machine = BigMachine("fat.txt")
+        big_machine.process_quadruple()
+
     else:
         pass
 

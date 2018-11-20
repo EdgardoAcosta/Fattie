@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from fattie.cube import Cube
 from fattie.belly.types import Types
 from fattie.belly.exceptions import BigError
@@ -33,7 +34,7 @@ class Switch:
 
 class Chubby:
     # Constructor of class
-    def __init__(self):
+    def __init__(self, debug=False):
         self._global_variable = {}
         self._local_variable = {}
         self._functions = {}
@@ -54,6 +55,7 @@ class Chubby:
         self._dimension = 0
 
         self._next_const_addr = 500000
+        sys.tracebacklimit = debug
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
@@ -454,7 +456,6 @@ class Chubby:
         :return: None, Insert quadruple in stack
         """
         action_name = self.text_to_special_operator(action_name)
-
         exp = self._operand.pop()
 
         if exp is None:
@@ -539,7 +540,12 @@ class Chubby:
         self._quadruple.add(QuadruplePack(SpecialFunction.GO, None, x, y))
 
     def make_special_function_input(self):
-        self._quadruple.add(QuadruplePack(SpecialFunction.INPUT))
+
+        exp = self._operand.pop()
+
+        if exp is None:
+            raise BigError("No given value to save input")
+        self._quadruple.add(QuadruplePack(SpecialFunction.INPUT, result=exp))
 
     # </editor-fold>
 
