@@ -538,6 +538,9 @@ class Chubby:
 
         self._quadruple.add(QuadruplePack(SpecialFunction.GO, None, x, y))
 
+    def make_special_function_input(self):
+        self._quadruple.add(QuadruplePack(SpecialFunction.INPUT))
+
     # </editor-fold>
 
     # <editor-fold desc="Prints for test">

@@ -568,9 +568,9 @@ def p_special_fun(p):
 
 
 def p_input(p):
-    '''input : INPUT OPEN_PAREN expression CLOSE_PAREN'''
+    '''input : INPUT OPEN_PAREN  CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1])
+        chubby.make_special_function_input()
     except BigError as e:
         e.print(p.lienno(0))
 

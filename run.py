@@ -1,6 +1,7 @@
 import sys
 from fattie.parser import parser_fattie, chubby
 from fattie.scanner import fattie_lexer
+from VirtualBigMachine import bigMachine
 
 
 def _main():
@@ -15,9 +16,9 @@ def _main():
             print(EOFError)
     else:
         print("No file to test found")
-        print("-> ")
-        for line in sys.stdin:
-            data = data + line
+        # print("-> ")
+        # for line in sys.stdin:
+        #     data = data + line
     _eat(data)
 
 
@@ -26,6 +27,8 @@ def _eat(data):
     if parser == "COMPILED":
         print("Compiled successfully ")
         chubby.make_output()
+
+        bigMachine()
     else:
         pass
 
