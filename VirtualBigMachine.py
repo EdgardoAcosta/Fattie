@@ -66,18 +66,80 @@ def bigMachine():
             l_val = quadruple['l_value']['addr']
             result = quadruple['result']['addr']
 
+            #verify if l_val is a global or local direction
+            if l_val >= 1000000:
+                l_val = l_val - 1000000
+                value = getValue_FatGlobalMemory(l_val)
+            else:
+                value = getValue_FatMemory(l_val)
+
              #verify if is going to assign to a global variable
             if result / 1000000 >= 1:
                 result = result - 1000000
-                insertInFatGlobalMemory(result, l_val)
+                insertInFatGlobalMemory(result, value)
                 printGlobalValue(result)
             else:
-                insertInFatMemory(result,l_val)
+                insertInFatMemory(result,value)
                 printLocalValue(result)
 
         #add of two variables
         elif quadruple['operator'] == 'PLUS':
 
+            l_val = quadruple['l_value']['addr']
+            r_val = quadruple['r_value']['addr']
+            result = quadruple['result']['addr']
+
+            #verify if is going to stract l_val from a global variable
+            if l_val / 1000000 >= 1:
+                l_val = l_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatGlobalMemory(l_val))
+                else:
+                    l_operand = getValue_FatGlobalMemory(l_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
+                else:
+                    l_operand = getValue_FatMemory(l_val)
+
+            #verify if is going to stract r_val from a global variable
+            if r_val / 1000000 >= 1:
+                r_val = r_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatGlobalMemory(r_val))
+                else:
+                    r_operand = getValue_FatGlobalMemory(r_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
+                else:
+                    r_operand = getValue_FatMemory(r_val)
+
+            #verify if si going to assign to a global variable
+            if result / 1000000 >= 1:
+                result = result - 1000000
+                evaluation = l_operand + r_operand
+                insertInFatGlobalMemory(result, evaluation)
+                printGlobalValue(result)
+
+            else:
+                evaluation = l_operand + r_operand
+                insertInFatMemory(result,evaluation)
+                printLocalValue(result)
+
+            # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
+            # TODO: Checar la concatenacion de CHARS
+
+        #substrac of two variables
+        elif quadruple['operator'] == 'MINUS':
             l_val = quadruple['l_value']['addr']
             r_val = quadruple['r_value']['addr']
             result = quadruple['result']['addr']
@@ -124,45 +186,114 @@ def bigMachine():
                 printGlobalValue(result)
 
             else:
-                evaluation = l_operand + r_operand
+                evaluation = l_operand - r_operand
                 insertInFatMemory(result,evaluation)
                 printLocalValue(result)
 
-            # #verify if l_val is indirect o direct reference
-            # if getValue_FatMemory(l_val) >= 500000:
-            #     l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
-            # else:
-            #     l_operand = getValue_FatMemory(l_val)
-            #
-            # # verify if l_val is indirect o direct reference
-            # if getValue_FatMemory(r_val) >= 500000:
-            #     r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
-            # else:
-            #     r_operand = getValue_FatMemory(r_val)
-            #
-            # evaluation = l_operand + r_operand
-            # insertInFatMemory(result,evaluation)
-            # printLocalValue(result)
+        #multiply two variables
+        elif quadruple['operator'] == 'TIMES':
+            l_val = quadruple['l_value']['addr']
+            r_val = quadruple['r_value']['addr']
+            result = quadruple['result']['addr']
 
+            # verify if is going to stract l_val from a global variable
+            if l_val / 1000000 >= 1:
+                l_val = l_val - 1000000
 
-            # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatGlobalMemory(l_val))
+                else:
+                    l_operand = getValue_FatGlobalMemory(l_val)
 
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
+                else:
+                    l_operand = getValue_FatMemory(l_val)
 
-        # elif quadruple['operator'] == 'MINUS':
-        #     l_val = quadruple['l_value']['addr']
-        #     r_val = quadruple['r_value']['addr']
-        #     result = quadruple['result']['addr']
-        #
-        # elif quadruple['operator'] == 'TIMES':
-        #     l_val = quadruple['l_value']['addr']
-        #     r_val = quadruple['r_value']['addr']
-        #     result = quadruple['result']['addr']
-        #
-        # elif quadruple['operator'] == 'DIVIDE':
-        #     l_val = quadruple['l_value']['addr']
-        #     r_val = quadruple['r_value']['addr']
-        #     result = quadruple['result']['addr']
-        #
+            # verify if is going to stract r_val from a global variable
+            if r_val / 1000000 >= 1:
+                r_val = r_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatGlobalMemory(r_val))
+                else:
+                    r_operand = getValue_FatGlobalMemory(r_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
+                else:
+                    r_operand = getValue_FatMemory(r_val)
+
+            # verify if si going to assign to a global variable
+            if result / 1000000 >= 1:
+                result = result - 1000000
+                evaluation = l_operand + r_operand
+                insertInFatGlobalMemory(result, evaluation)
+                printGlobalValue(result)
+
+            else:
+                evaluation = l_operand * r_operand
+                insertInFatMemory(result, evaluation)
+                printLocalValue(result)
+
+        #divide two variables
+        elif quadruple['operator'] == 'DIVIDE':
+            l_val = quadruple['l_value']['addr']
+            r_val = quadruple['r_value']['addr']
+            result = quadruple['result']['addr']
+
+            # verify if is going to stract l_val from a global variable
+            if l_val / 1000000 >= 1:
+                l_val = l_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatGlobalMemory(l_val))
+                else:
+                    l_operand = getValue_FatGlobalMemory(l_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
+                else:
+                    l_operand = getValue_FatMemory(l_val)
+
+            # verify if is going to stract r_val from a global variable
+            if r_val / 1000000 >= 1:
+                r_val = r_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatGlobalMemory(r_val))
+                else:
+                    r_operand = getValue_FatGlobalMemory(r_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
+                else:
+                    r_operand = getValue_FatMemory(r_val)
+
+            # verify if si going to assign to a global variable
+            if result / 1000000 >= 1:
+                result = result - 1000000
+                evaluation = l_operand + r_operand
+                insertInFatGlobalMemory(result, evaluation)
+                printGlobalValue(result)
+
+            else:
+                evaluation = l_operand / r_operand
+                insertInFatMemory(result, evaluation)
+                printLocalValue(result)
+
         # elif quadruple['operator'] == 'LESS':
         #     l_val = quadruple['l_value']['addr']
         #     r_val = quadruple['r_value']['addr']
@@ -262,6 +393,10 @@ def bigMachine():
         #     l_val = quadruple['l_value']['addr']
         #     r_val = quadruple['r_value']['addr']
         #     result = quadruple['result']['addr']
+
+        # TODO check that the minus times and divide  work correctly
+
+
 
 
 
