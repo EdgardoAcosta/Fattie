@@ -79,7 +79,7 @@ class Chubby:
         elif id_var in self._global_variable:
             return self._global_variable.get(id_var)
         else:
-            raise BigError.undefined_variable('{}'.format())
+            raise BigError.undefined_variable('The variable {} doest exist'.format(id_var))
 
     def clean_variables_from_function(self):
         self._local_variable.clear()
@@ -465,7 +465,7 @@ class Chubby:
                 print(action_name)
                 raise BigError.invalid_type(
                     "Function {} only accepts expression of type {} ".format(action_name.name,
-                                                                              [item.name for item in expected_type]))
+                                                                             [item.name for item in expected_type]))
 
         q = QuadruplePack(action_name, None, None, exp)
         self._quadruple.add(q)
@@ -478,27 +478,22 @@ class Chubby:
         """
         self._quadruple.add(QuadruplePack(SpecialFunction.CLEAN))
 
-    def make_special_function_circle(self, exp1, exp2=None, exp3=None, expected_type=None):
+    def make_special_function_square(self, expected_type=None):
         """
-        Make quadruple for circle, can accept 1, 2 or 3 parameters
-        :param exp1:
-        :param exp2:
-        :param exp3:
-        :param expected_type:
-        :return: None, Insert quadruple in stack
-        """
-        pass
-
-    def make_special_function_square(self, exp1, exp2, exp3=None, expected_type=None):
-        """
-        Make quadruple for square, accept 1, 2 and a 3 as optional
-        :param exp1:
-        :param exp2:
-        :param exp3:
+        Make quadruple for square, accept 1, 2 parameters
         :param expected_type:
         :return:
         """
-        pass
+        p1 = self._operand.pop()
+        p2 = self._operand.pop()
+
+        if expected_type is not None:
+            if p1.type_var not in expected_type or p2.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.SQUARE, None, p1, p2))
 
     def make_special_function_start_point(self, expected_type=None):
         """

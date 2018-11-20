@@ -28,7 +28,7 @@ main =>
 		var Int : test11, test12
 
 		var Boolean : param1
-		test11 = 1
+		test11 = param1
 
 		input(1)
 		print(test11)

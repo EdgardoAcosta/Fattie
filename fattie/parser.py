@@ -633,36 +633,21 @@ def p_color(p):
 
 
 def p_circle(p):
-    '''circle : CIRCLE OPEN_PAREN expression sub_circle CLOSE_PAREN'''
+    '''circle : CIRCLE OPEN_PAREN expression CLOSE_PAREN'''
     # TODO: Make this
     try:
-        chubby.make_special_function_circle(p[1], [Types.INT, Types.FLOAT])
+        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
         e.print(p.lienno(1))
-
-
-def p_sub_circle(p):
-    '''sub_circle : COMMA expression COMMA expression
-                  | COMMA expression
-                  | empty'''
 
 
 def p_square(p):
     '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
     # TODO: Make this
     try:
-        chubby.make_special_function_square(p[3], p[5], p[6], [Types.INT, Types.FLOAT])
+        chubby.make_special_function_square([Types.INT])
     except BigError as e:
         e.print(p.lienno(1))
-
-
-def p_sub_square(p):
-    '''sub_square : COMMA expression
-                  | empty'''
-    if p[1] is not None:
-        p[0] = p[2]
-    else:
-        p[0] = None
 
 
 def p_clean(p):
