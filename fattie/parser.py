@@ -642,7 +642,7 @@ def p_circle(p):
 
 
 def p_square(p):
-    '''square :  SQUARE OPEN_PAREN expression COMMA expression sub_square CLOSE_PAREN'''
+    '''square :  SQUARE OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
     # TODO: Make this
     try:
         chubby.make_special_function_square([Types.INT])
