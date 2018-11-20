@@ -62,3 +62,17 @@ class BigError(SyntaxError):
         err = BigError(msg)
         err.err_name = 'Invalid operator'
         return err
+
+    @staticmethod
+    def invalid_array(msg):
+        err = BigError(msg)
+        err.err_name = 'Variable is not Array type'
+        return err
+
+    @staticmethod
+    def invalid_type(msg):
+        err = BigError(msg)
+        err.err_name = 'Invali type in expression'
+        return err
+
+
