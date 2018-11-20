@@ -440,7 +440,7 @@ class Chubby:
         raise BigError("Type {} is not a valid one".format(tp))
 
     def make_output(self):
-        file = open("fat.ft", "w")
+        file = open("fat.txt", "w")
         self._quadruple.write_to_file(file)
 
     # </editor-fold>

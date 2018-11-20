@@ -1,4 +1,3 @@
-from fattie.belly.fluffyvariable import *
 import ast
 
 #stack with the quadruples
@@ -8,10 +7,9 @@ quadruples = list()
 fatMemory = list()
 fatMemory = 600000 * [""] #Memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,const 500000 - 600000
 
-#definition of temporal memory
-temporalMemory = list()
-temporalMemory = 6000 * [""] #Temporal memory for variables
-
+#definition of the globalmemory
+fatGlobalMemory = list()
+fatGlobalMemory = 600000 * [""] #Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,const 500000 - 600000
 
 def init():
 
@@ -28,14 +26,23 @@ def init():
 def insertInFatMemory(position, value):
     fatMemory[position] = value
 
-def insertInTemporalMemory(position, value):
-    temporalMemory[position] = value
+def getValue_FatMemory(position):
+    result = fatMemory[position]
+    return result
+
+def insertInFatGlobalMemory(position, value):
+    fatGlobalMemory[position] = value
+
+def getValue_FatGlobalMemory(position):
+    result = fatGlobalMemory[position]
+    return result
 
 #just for test porpuses
-def printValue(position):
-    print(position)
-    print("=>")
-    print(fatMemory[position])
+def printLocalValue(position):
+    print("local:{}=>{}".format(position, fatMemory[position]))
+
+def printGlobalValue(position):
+    print("global:{}=>{}".format(position, fatGlobalMemory[position]))
 
 def bigMachine():
 
@@ -45,25 +52,101 @@ def bigMachine():
 
     #Resolve the quadruples given
     for quadruple in quadruples:
+
+        #assignation of constants
         if quadruple['operator'] == 'CONST':
             l_val = quadruple['l_value']['addr']
             result = quadruple['result']['addr']
 
             insertInFatMemory(result,l_val)
-            printValue(result)
+            printLocalValue(result)
 
-        elif quadruple['operator'] == 'EQUALS':
-             l_val = quadruple['l_value']['addr']
-             result = quadruple['result']['addr']
+        #asignation of any variable
+        elif quadruple['operator'] == 'EQUAL':
+            l_val = quadruple['l_value']['addr']
+            result = quadruple['result']['addr']
 
-             insertInFatMemory(result,l_val)
+             #verify if is going to assign to a global variable
+            if result / 1000000 >= 1:
+                result = result - 1000000
+                insertInFatGlobalMemory(result, l_val)
+                printGlobalValue(result)
+            else:
+                insertInFatMemory(result,l_val)
+                printLocalValue(result)
 
-        # elif quadruple['operator'] == 'PLUS':
-        #
-        #     l_val = quadruple['l_value']['addr']
-        #     r_val = quadruple['r_value']['addr']
-        #     result = quadruple['result']['addr']
-        #     print()
+        #add of two variables
+        elif quadruple['operator'] == 'PLUS':
+
+            l_val = quadruple['l_value']['addr']
+            r_val = quadruple['r_value']['addr']
+            result = quadruple['result']['addr']
+
+            #verify if is going to stract l_val from a global variable
+            if l_val / 1000000 >= 1:
+                l_val = l_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatGlobalMemory(l_val))
+                else:
+                    l_operand = getValue_FatGlobalMemory(l_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(l_val) >= 500000:
+                    l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
+                else:
+                    l_operand = getValue_FatMemory(l_val)
+
+            #verify if is going to stract r_val from a global variable
+            if r_val / 1000000 >= 1:
+                r_val = r_val - 1000000
+
+                # verify if l_val is indirect o direct reference
+                if getValue_FatGlobalMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatGlobalMemory(r_val))
+                else:
+                    r_operand = getValue_FatGlobalMemory(r_val)
+
+            else:
+                # verify if l_val is indirect o direct reference
+                if getValue_FatMemory(r_val) >= 500000:
+                    r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
+                else:
+                    r_operand = getValue_FatMemory(r_val)
+
+            #verify if si goign to assign to a global variable
+            if result / 1000000 >= 1:
+                result = result - 1000000
+                evaluation = l_operand + r_operand
+                insertInFatGlobalMemory(result, evaluation)
+                printGlobalValue(result)
+
+            else:
+                evaluation = l_operand + r_operand
+                insertInFatMemory(result,evaluation)
+                printLocalValue(result)
+
+            # #verify if l_val is indirect o direct reference
+            # if getValue_FatMemory(l_val) >= 500000:
+            #     l_operand = getValue_FatMemory(getValue_FatMemory(l_val))
+            # else:
+            #     l_operand = getValue_FatMemory(l_val)
+            #
+            # # verify if l_val is indirect o direct reference
+            # if getValue_FatMemory(r_val) >= 500000:
+            #     r_operand = getValue_FatMemory(getValue_FatMemory(r_val))
+            # else:
+            #     r_operand = getValue_FatMemory(r_val)
+            #
+            # evaluation = l_operand + r_operand
+            # insertInFatMemory(result,evaluation)
+            # printLocalValue(result)
+
+
+            # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
+
 
         # elif quadruple['operator'] == 'MINUS':
         #     l_val = quadruple['l_value']['addr']
@@ -120,7 +203,7 @@ def bigMachine():
         #     r_val = quadruple['r_value']['addr']
         #     result = quadruple['result']['addr']
         #
-        # elif quadruple['operator'] == 'EQUAL':
+        # elif quadruple['operator'] == 'EQUALS':
         #     l_val = quadruple['l_value']['addr']
         #     r_val = quadruple['r_value']['addr']
         #     result = quadruple['result']['addr']
