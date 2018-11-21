@@ -1,8 +1,0 @@
-{'operator': 'GOTO', 'l_value': None, 'r_value': None, 'result': {'id_var': None, 'type_var': '', 'access': 'Direct', 'array': [], 'addr': 1}}
-{'operator': 'CONST', 'l_value': {'id_var': None, 'type_var': '', 'access': 'Direct', 'array': [], 'addr': 1}, 'r_value': None, 'result': {'id_var': 'CONST-1', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 500000}}
-{'operator': 'EQUAL', 'l_value': {'id_var': 'CONST-1', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 500000}, 'r_value': None, 'result': {'id_var': 'test11', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 7}}
-{'operator': 'CONST', 'l_value': {'id_var': None, 'type_var': '', 'access': 'Direct', 'array': [], 'addr': 2}, 'r_value': None, 'result': {'id_var': 'CONST-2', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 500001}}
-{'operator': 'EQUAL', 'l_value': {'id_var': 'CONST-2', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 500001}, 'r_value': None, 'result': {'id_var': 'test12', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 0}}
-{'operator': 'PLUS', 'l_value': {'id_var': 'test11', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 7}, 'r_value': {'id_var': 'test12', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 0}, 'result': {'id_var': None, 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 8}}
-{'operator': 'EQUAL', 'l_value': {'id_var': None, 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 8}, 'r_value': None, 'result': {'id_var': 'varTest', 'type_var': 'INT', 'access': 'Direct', 'array': [], 'addr': 1}}
-{'operator': 'END', 'l_value': None, 'r_value': None, 'result': None}
