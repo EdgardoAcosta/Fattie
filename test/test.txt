@@ -1,34 +1,11 @@
 
 main =>
 		var Char : test0, test4, test10
-		var Int : test11, test12, varTest
+		var Int : test11, test12, varTest,varTest1,varTest2,varTest3,varTest4,varTest5
 		var Float: ft
 		var Boolean: bt
-		startPosition(180,160)
-		circle(60,45)
 
-		screenSizes(test11,test12)
-		print(test11)
-		print(test12)
+		test11 = 1
+		test12 = 2
 
-		ft = 1.0
-		bt = True
-
-		go(12,12)
-
-		circle(60,45)
-		sleep(3)
-
-		color("#E70000")
-
-		draw(False)
-
-		moveUp(45)
-
-		draw(True)
-
-		moveLeft(78)
-
-		circle(110,280)
-
-		sleep(6)
+		varTest = test11 + test12

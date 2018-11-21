@@ -38,7 +38,8 @@ class BigMachine:
         self._start_x = self._turtle.setx(0)
         self._start_y = self._turtle.sety(0)
         self._turtle.pensize(2)
-        self._turtle.speed(9)
+        self._turtle.speed()
+        self._screen.screensize(400,400)
 
         with open(filename) as fp:
             line = fp.readline()
@@ -76,6 +77,46 @@ class BigMachine:
             return self._get_value_fat_global_memory(add)
         else:
             return self._get_value_fat_memory(add)
+
+    @staticmethod
+    def _fibonacci(n):
+        fib = []
+        a, b = 0, 1
+        while a < n:
+            a, b = b, a + b
+            fib.append(a)
+
+        return fib
+
+    def _draw_fib(self, fib, factor):
+        print(fib)
+        num_sqr = len(fib)
+        self._turtle.pensize(0)
+        self._turtle.penup()
+        self._turtle.goto(50, 50)
+        self._turtle.pendown()
+
+        for i in range(num_sqr):
+            self._draw_square(factor * fib[i])  # Draw square
+            self._turtle.penup()  # Move to new corner as starting point
+            self._turtle.forward(factor * fib[i])
+            self._turtle.right(90)
+            self._turtle.forward(factor * fib[i])
+            self._turtle.pendown()
+        self._turtle.penup()
+        self._turtle.goto(50, 50)  # Move to starting point
+        self._turtle.setheading(0)  # Face the turtle to the right
+        self._turtle.pencolor('red')
+        self._turtle.pensize(3)
+        self._turtle.pendown()
+        # Draw quartercircles with fibonacci numbers as radius
+        for i in range(num_sqr):
+            self._turtle.circle(-factor * fib[i], 90)  # minus sign to draw clockwise
+
+    def _draw_square(self, side_length):  # Function for drawing a square
+        for i in range(4):
+            self._turtle.forward(side_length)
+            self._turtle.right(90)
 
     # </editor-fold>
 
@@ -541,7 +582,6 @@ class BigMachine:
                 x = self.get_value(quadruple['r_value']['addr'])
                 y = self.get_value(quadruple['result']['addr'])
 
-
                 self._turtle.penup()
                 self._turtle.goto(x, y)
                 self._turtle.pendown()
@@ -569,12 +609,21 @@ class BigMachine:
 
             # </editor-fold>
 
-            elif quadruple['operator'] == 'FACTORIAL':
-                pass
+            # <editor-fold desc="Special Functions">
+            elif quadruple['operator'] == 'FIBONACCI':
+
+                n = self.get_value(quadruple['result']['addr'])
+                fib = self._fibonacci(n)
+                self._turtle.setx(0)
+                self._turtle.sety(0)
+                self._draw_fib(fib, 6)
+
+
             elif quadruple['operator'] == 'SLEEP':
                 ms = self.get_value(quadruple['result']['addr'])
                 print("...zzz")
                 time.sleep(float(ms))
+            # </editor-fold>
 
             else:
                 # print(quadruple)
