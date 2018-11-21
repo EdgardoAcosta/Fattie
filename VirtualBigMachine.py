@@ -342,22 +342,23 @@ class BigMachine:
                     self._print_local_value(result)
 
             #implementation of the era for functions
-            elif quadruple['operator'] == 'ERA':
-
-                result = quadruple['result']['addr']
-                slots_int = result['INT']
-                slots_float = result['FLOAT']
-                slots_char = result['CHAR']
-                slots_boolean = result['BOOLEAN']
-
-                #add the memory slots necesary for the function
-                memoryview.append({"INT": slots_int, "FLOAT": slots_float, "CHAR": slots_char, "BOOLEAN": slots_boolean})
-
-                #sum of all the sizes
-                total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
-
-                #add to the bigMemory stack
-                self._bigMemory.append(FatMemory(total_size * [None]))
+            # elif quadruple['operator'] == 'ERA':
+            #
+            #     result = quadruple['result']['addr']
+            #     slots_int = result['INT']
+            #     slots_float = result['FLOAT']
+            #     slots_char = result['CHAR']
+            #     slots_boolean = result['BOOLEAN']
+            #
+            #     #add the memory slots necesary for the function
+            #     memoryview.append({"INT": slots_int, "FLOAT": slots_float, "CHAR": slots_char, "BOOLEAN": slots_boolean})
+            #
+            #     #sum of all the sizes
+            #     total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
+            #
+            #     #add to the bigMemory stack
+            #
+            #     self._bigMemory.append(FatMemory(total_size * [None]))
 
 
             # elif quadruple['operator'] == 'LESS':
