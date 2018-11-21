@@ -221,6 +221,7 @@ def p_n_while(p):
 def p_assignation(p):
     '''assignation : var_assignation  EQUAL n_equal expression'''
     try:
+
         chubby.create_assignation()
     except BigError as e:
         e.print(p.lineno(1))
@@ -359,6 +360,18 @@ def p_n_factor(p):
         e.print(p.lineno(0))
 
 
+def p_term_factor(p):
+    '''term_factor : operator_ar term
+                   | empty'''
+
+
+def p_operator_ar(p):
+    '''operator_ar : TIMES
+                   | DIVIDE'''
+    if not p[1] is None:
+        chubby.add_operator(chubby.text_to_operator(p[1]))
+
+
 def p_operator(p):
     '''operator : sign n_operator exp
                 | empty'''
@@ -388,15 +401,6 @@ def p_unary(p):
 
     if p[1] is not None:
         chubby.add_operator(Operator.UMINUS)
-
-
-def p_term_factor(p):
-    '''term_factor : TIMES term
-                   | DIVIDE term
-                   | empty'''
-
-    if not p[1] is None:
-        chubby.add_operator(chubby.text_to_operator(p[1]))
 
 
 # </editor-fold>

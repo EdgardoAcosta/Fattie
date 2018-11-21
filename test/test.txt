@@ -1,11 +1,8 @@
-
 main =>
-		var Char : test0, test4, test10
-		var Int : test11, test12, varTest,varTest1,varTest2,varTest3,varTest4,varTest5
-		var Float: ft
-		var Boolean: bt
+		var Int : test11, test12, varTest
 
-		test11 = 1
+		test11 = 12
 		test12 = 2
+		varTest = test12 / test11
 
-		varTest = test11 + test12
+		print(varTest)

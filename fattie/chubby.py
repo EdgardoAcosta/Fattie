@@ -145,6 +145,7 @@ class Chubby:
             # Add result position of _quadruple to the operand list
             self._operand.append(result)
 
+
         else:
             raise BigError.mismatch_operator("{} {} {} ".format(l_type.name, oper.name, r_type.name))
 

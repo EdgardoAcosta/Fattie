@@ -24,12 +24,12 @@ class BigMachine:
         # definition of the memory
         # Memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
         # const 500000 - 600000
-        self._fatMemory = 600000 * [""]
+        self._fatMemory = 600000 * [None]
 
         # definition of the globalmemory
         # Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
         # const 500000 - 600000
-        self._fatGlobalMemory = 600000 * [""]
+        self._fatGlobalMemory = 600000 * [None]
 
         self._screen_dim = True
 
@@ -270,23 +270,26 @@ class BigMachine:
                 l_val = quadruple['l_value']['addr']
                 r_val = quadruple['r_value']['addr']
                 result = quadruple['result']['addr']
+                print(self._fatMemory[0:9])
 
                 # verify if is going to subtract l_val from a global variable
-                if l_val / 1000000 >= 1:
-                    l_val = l_val - 1000000
-                    l_operand = self._get_value_fat_global_memory(l_val)
-
-                else:
-                    l_operand = self._get_value_fat_memory(l_val)
+                l_operand = self.get_value(l_val)
+                # if l_val / 1000000 >= 1:
+                #     l_val = l_val - 1000000
+                #     l_operand = self._get_value_fat_global_memory(l_val)
+                #
+                # else:
+                #     l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
-                if r_val / 1000000 >= 1:
-                    r_val = r_val - 1000000
-
-                    r_operand = self._get_value_fat_global_memory(r_val)
-
-                else:
-                    r_operand = self._get_value_fat_memory(r_val)
+                r_operand = self.get_value(r_val)
+                # if r_val / 1000000 >= 1:
+                #     r_val = r_val - 1000000
+                #
+                #     r_operand = self._get_value_fat_global_memory(r_val)
+                #
+                # else:
+                #     r_operand = self._get_value_fat_memory(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
@@ -296,10 +299,17 @@ class BigMachine:
                     self._print_global_value(result)
 
                 else:
-
                     evaluation = l_operand / r_operand
                     self._insert_in_fat_memory(result, evaluation)
                     self._print_local_value(result)
+
+
+
+            elif quadruple['operator'] == 'ERA':
+                l_val = quadruple['l_value']['addr']
+                r_val = quadruple['r_value']['addr']
+                result = quadruple['result']['addr']
+
 
             # elif quadruple['operator'] == 'LESS':
             #     l_val = quadruple['l_value']['addr']
@@ -365,17 +375,6 @@ class BigMachine:
             #     l_val = quadruple['l_value']['addr']
             #     r_val = quadruple['r_value']['addr']
             #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'CONST':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'ERA':
-            #      l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
             # elif quadruple['operator'] == 'RETURN':
             #    l_val = quadruple['l_value']['addr']
             #     r_val = quadruple['r_value']['addr']
