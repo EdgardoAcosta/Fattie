@@ -409,6 +409,7 @@ def p_unary(p):
              | empty'''
 
     if p[1] is not None:
+        print("MINIUS")
         chubby.add_operator(Operator.UMINUS)
 
 

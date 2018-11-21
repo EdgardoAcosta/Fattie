@@ -31,6 +31,9 @@ class BigMachine:
         # const 500000 - 600000
         self._fatGlobalMemory = 600000 * [None]
 
+        # Retorn to quadruple
+        self._saved_quadruple = 0
+
         self._screen_dim = True
 
         self._screen = turtle.Screen()
@@ -342,19 +345,24 @@ class BigMachine:
 
             # <editor-fold desc="Function">
             elif self._quadruples[i]['operator'] == 'GOSUB':
-                l_val = self._quadruples[i]['l_value']
-                r_val = self._quadruples[i]['r_value']
-                result = self._quadruples[i]['result']
+                # self._saved_quadruple = i + 1
+                # i = self._quadruples[i]['result']['addr']
+                # TODO: Save quadruple ( i )
+                pass
 
             elif self._quadruples[i]['operator'] == 'ENPROC':
-                l_val = self._quadruples[i]['l_value']
-                r_val = self._quadruples[i]['r_value']
-                result = self._quadruples[i]['result']
+                # TODO: Retorn to quadruple saved ( i )
+                print(self._saved_quadruple)
+                # i = self._saved_quadruple
+                pass
 
             elif self._quadruples[i]['operator'] == 'RETURN':
-                l_val = self._quadruples[i]['l_value']
-                r_val = self._quadruples[i]['r_value']
-                result = self._quadruples[i]['result']
+
+                value = self.get_value(self._quadruples[i]['l_value']['addr'])
+                result = self._quadruples[i]['result']['addr']
+                pass
+
+                # self.insert(result, value)
 
             elif self._quadruples[i]['operator'] == 'PARAM':
                 l_val = self._quadruples[i]['l_value']
@@ -369,6 +377,11 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'END':
                 endFlag = True
             # </editor-fold>
+
+            elif self._quadruples[i]['operator'] == 'VER':
+
+                pass
+
 
             # <editor-fold desc="IO">
 
