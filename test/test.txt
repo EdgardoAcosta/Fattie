@@ -1,28 +1,10 @@
-fun fn1(Int : param1):Int =>
-		var Int: var1, var2
-		var2 = param1
-		print(var2)
-		return var2
-
 main =>
-		var Int : test11, test12, varTest
+		var Int : test11, test12, varTest, a[1]
+		var Int : b[2][12]
 		var Boolean : bol
 
 		test11 = 5
 		test12 = 12
-		varTest = test12 / test11
-		bol = False
-		fn1(test11)
+		varTest = test12 * test11
 
-		while test12 greater test11 =>
-		    circle(315, 180)
-		    moveUp(70)
-		    print("Print while")
-		    test11 = test11 + 1
-		    print(test11)
-
-
-
-		sleep(2)
-		print("END")
-		fn1(test11)
+		b[0][0] = 1
