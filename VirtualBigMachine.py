@@ -9,7 +9,17 @@ regex_float = '[0-9]*\.[0-9]+|[0-9]+'
 regex_boolean = '(^True$|^False$)'
 regex_color = '#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 
+# definition of the globalmemory for variables
+# Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
+# const 500000 - 600000
+class FatMemory:
 
+    def __init__(self,cell = list()):
+        self.fat_memory = cell
+
+
+
+#virtual machine
 class BigMachine:
     """
      Function to start the VM, will initialize the necessary memory,allocate the variables and
@@ -21,15 +31,27 @@ class BigMachine:
         # stack with the quadruples
         self._quadruples = list()
 
-        # definition of the memory
-        # Memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
-        # const 500000 - 600000
-        self._fatMemory = 600000 * [None]
+        #definition of the stack where we are going to store the memory necesary for the functions
+        #this memories are fat memories with variables in them
+        self._bigMemory = list()
 
-        # definition of the globalmemory
+        # definition of the globalmemory for variables
         # Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
         # const 500000 - 600000
         self._fatGlobalMemory = 600000 * [None]
+
+        #definition of the memory for the constants
+        #it stores the constants values
+        self._heavyConstants = 600000 * [None]
+
+        #definition of the virtualmemory
+        #this memory save the memory requirements for functions
+        self._memorySizes = list()
+
+        # insertion of the first memoryfat inside of bigmemory
+        # insertion of the first variable table inside of the stack
+        # this first table of variables is for the main
+        self._bigMemory.append(FatMemory(600000 * [None]))
 
         self._screen_dim = True
 
@@ -51,11 +73,22 @@ class BigMachine:
 
     # <editor-fold desc="Set, get">
     def _insert_in_fat_memory(self, position, value):
-        self._fatMemory[position] = value
+        self._bigMemory[-1].fat_memory[position] = value
 
     def _get_value_fat_memory(self, position):
-        result = self._fatMemory[position]
+        result = self._bigMemory[-1].fat_memory[position]
         return result
+
+    def _get_value_heavy_constants(self, position):
+        position = position - 500000
+        result = self._heavyConstants[position]
+        return result
+
+    def _check_for_constant_direction(self, address):
+        if address >= 500000:
+            return True
+        else:
+            return False
 
     def _insert_in_fat_global_memory(self, position, value):
         self._fatGlobalMemory[position] = value
@@ -128,20 +161,25 @@ class BigMachine:
                 l_val = quadruple['l_value']['addr']
                 result = quadruple['result']['addr']
 
-                self._insert_in_fat_memory(result, l_val)
-                self._print_local_value(result)
+                result = result - 500000
+                self._heavyConstants[result] = l_val
+                print("Constant:{}=>{}".format(result, self._heavyConstants[result]))
 
             # assignation of any variable
             elif quadruple['operator'] == 'EQUAL':
                 l_val = quadruple['l_value']['addr']
                 result = quadruple['result']['addr']
 
-                # verify if l_val is a global or local direction
-                if l_val >= 1000000:
-                    l_val = l_val - 1000000
-                    value = self._get_value_fat_global_memory(l_val)
+                #check if the l_val is a constant
+                if self._check_for_constant_direction(l_val):
+                    value = self._get_value_heavy_constants(l_val)
                 else:
-                    value = self._get_value_fat_memory(l_val)
+                    # verify if l_val is a global or local direction
+                    if l_val >= 1000000:
+                        l_val = l_val - 1000000
+                        value = self._get_value_fat_global_memory(l_val)
+                    else:
+                        value = self._get_value_fat_memory(l_val)
 
                 # verify if is going to assign to a global variable
                 if result / 1000000 >= 1:
@@ -303,12 +341,23 @@ class BigMachine:
                     self._insert_in_fat_memory(result, evaluation)
                     self._print_local_value(result)
 
-
-
+            #implementation of the era for functions
             elif quadruple['operator'] == 'ERA':
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
+
                 result = quadruple['result']['addr']
+                slots_int = result['INT']
+                slots_float = result['FLOAT']
+                slots_char = result['CHAR']
+                slots_boolean = result['BOOLEAN']
+
+                #add the memory slots necesary for the function
+                memoryview.append({"INT": slots_int, "FLOAT": slots_float, "CHAR": slots_char, "BOOLEAN": slots_boolean})
+
+                #sum of all the sizes
+                total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
+
+                #add to the bigMemory stack
+                self._bigMemory.append(FatMemory(total_size * [None]))
 
 
             # elif quadruple['operator'] == 'LESS':
@@ -580,10 +629,10 @@ class BigMachine:
 
     # <editor-fold desc="Prints for test">
     def _print_local_value(self, position):
-        print("local:{}=>{}".format(position, self._fatMemory[position]))
+        print("local:{}=>{}".format(position, self._bigMemory[-1].fat_memory[position]))
 
     def _print_global_value(self, position):
-        print("global:{}=>{}".format(position, self._fatGlobalMemory[position]))
+        print("global:{}=>{}".format(position, self._bigMemory[-1].fat_memory[position]))
     # </editor-fold>
 
 
