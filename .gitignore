@@ -24,12 +24,12 @@ ENV/
 env.bak/
 
 # Test files
-test/*
+test/
 *.ft
+
 # Pycache
 fattie/belly/__pycached__/
 fattie/__pycached__/
 __pycache__/*
 fattie/core/__pycache__/
 fattie/__pycache__/
-fattie/belly/__pycache__/
