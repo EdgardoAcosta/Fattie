@@ -553,13 +553,13 @@ def p_special_fun(p):
                    | move_down
                    | move_right
                    | move_left
-                   | angle
                    | color
                    | circle
                    | square
                    | clean
                    | draw
                    | start_point
+                   | screen_sizes
                    | go
                    | fibonacci
                    | factorial
@@ -571,7 +571,7 @@ def p_input(p):
     try:
         chubby.make_special_function_input()
     except BigError as e:
-        e.print(p.lienno(0))
+        e.print(p.lineno(0))
 
 
 def p_expression_input(p):
@@ -592,7 +592,7 @@ def p_print(p):
     try:
         chubby.make_special_function(p[1])
     except BigError as e:
-        e.print(p.lienno(0))
+        e.print(p.lineno(0))
 
 
 def p_move_up(p):
@@ -600,7 +600,7 @@ def p_move_up(p):
     try:
         chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_move_down(p):
@@ -608,7 +608,7 @@ def p_move_down(p):
     try:
         chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_move_right(p):
@@ -616,7 +616,7 @@ def p_move_right(p):
     try:
         chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_move_left(p):
@@ -624,15 +624,7 @@ def p_move_left(p):
     try:
         chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
     except BigError as e:
-        e.print(p.lienno(1))
-
-
-def p_angle(p):
-    '''angle :  ANGLE OPEN_PAREN expression CLOSE_PAREN'''
-    try:
-        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
-    except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_color(p):
@@ -640,16 +632,15 @@ def p_color(p):
     try:
         chubby.make_special_function(p[1], [Types.CHAR])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_circle(p):
-    '''circle : CIRCLE OPEN_PAREN expression CLOSE_PAREN'''
-    # TODO: Make this
+    '''circle : CIRCLE OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
     try:
-        chubby.make_special_function(p[1], [Types.INT, Types.FLOAT])
+        chubby.make_special_function_circle([Types.INT, Types.FLOAT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_square(p):
@@ -658,7 +649,7 @@ def p_square(p):
     try:
         chubby.make_special_function_square([Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_clean(p):
@@ -666,7 +657,7 @@ def p_clean(p):
     try:
         chubby.make_special_function_clean()
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_draw(p):
@@ -674,7 +665,7 @@ def p_draw(p):
     try:
         chubby.make_special_function(p[1], [Types.BOOLEAN])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_start_point(p):
@@ -682,31 +673,41 @@ def p_start_point(p):
     try:
         chubby.make_special_function_start_point([Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
-def p_screen_sizes_x(p):
-    '''screen_sizes_x : SCREENSIZESX OPEN_PAREN CLOSE_PAREN'''
+def p_screen_sizes(p):
+    '''screen_sizes : SCREENSIZES OPEN_PAREN expression_input COMMA expression_input CLOSE_PAREN'''
     try:
-        chubby.make_special_function_screen_size(SpecialFunction.SCREENSIZESX)
+        chubby.make_special_function_screen_size([Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
-
-
-def p_screen_sizes_y(p):
-    '''screen_sizes_y :  SCREENSIZESY OPEN_PAREN CLOSE_PAREN'''
-    try:
-        chubby.make_special_function_screen_size(SpecialFunction.SCREENSIZESY)
-    except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_go(p):
-    '''go :  GO OPEN_PAREN expression COMMA expression CLOSE_PAREN'''
+    '''go : GO OPEN_PAREN expression_go COMMA expression_go CLOSE_PAREN'''
     try:
         chubby.make_special_function_go([Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
+
+
+def p_expression_go(p):
+    '''expression_go : ID
+                     | ID OPEN_BRACKET expression CLOSE_BRACKET
+                     | ID OPEN_BRACKET expression CLOSE_BRACKET OPEN_BRACKET expression CLOSE_BRACKET
+                     | CTEI
+                     | CTEF'''
+
+    try:
+        if isinstance(p[1], int):
+            var = chubby.add_constants(p[1], Types.INT)
+            print(var)
+        else:
+            var = chubby.find_variable(p[1])
+        chubby.add_operand(var)
+    except BigError as e:
+        e.print(p.lineno(1))
 
 
 def p_fibonacci(p):
@@ -714,7 +715,7 @@ def p_fibonacci(p):
     try:
         chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_factorial(p):
@@ -722,7 +723,7 @@ def p_factorial(p):
     try:
         chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 def p_sleep(p):
@@ -730,7 +731,7 @@ def p_sleep(p):
     try:
         chubby.make_special_function(p[1], [Types.INT])
     except BigError as e:
-        e.print(p.lienno(1))
+        e.print(p.lineno(1))
 
 
 # </editor-fold>
@@ -747,16 +748,16 @@ def p_sign(p):
 def p_var_cte(p):
     '''var_cte : ID n_var_cte_id var_array
                | function_call
-               | constant
-               | screen_sizes_x
-               | screen_sizes_y'''
+               | constant'''
     p[0] = p[1]
 
 
 def p_constants(p):
-    '''constant : ctei
-                | ctef
-                | ctec'''
+    '''constant : ctef
+                | ctei
+                | ctec
+                | true
+                | false'''
     p[0] = p[1]
 
 
@@ -775,6 +776,18 @@ def p_ctef(p):
 def p_ctec(p):
     '''ctec : CTEC'''
     chubby.add_constants(p[1], Types.CHAR)
+    p[0] = p[1]
+
+
+def p_true(p):
+    '''true : TRUE'''
+    chubby.add_constants(p[1], Types.BOOLEAN)
+    p[0] = p[1]
+
+
+def p_false(p):
+    '''false : FALSE'''
+    chubby.add_constants(p[1], Types.BOOLEAN)
     p[0] = p[1]
 
 

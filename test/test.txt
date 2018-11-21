@@ -1,24 +1,34 @@
 
 main =>
 		var Char : test0, test4, test10
-		var Int : test11, test12
+		var Int : test11, test12, varTest
 		var Float: ft
 		var Boolean: bt
+		startPosition(180,160)
+		circle(60,45)
 
-		test11 = 2
-		test12 = test11 + 1
-		input(test12)
-		square(test12,90)
-		clean()
-
-		square(test12,90)
-
-		sleep(test11)
-
-
+		screenSizes(test11,test12)
+		print(test11)
 		print(test12)
-		print("Value of test12 -> ")
-		moveUp(test11)
 
+		ft = 1.0
+		bt = True
 
+		go(12,12)
 
+		circle(60,45)
+		sleep(3)
+
+		color("#E70000")
+
+		draw(False)
+
+		moveUp(45)
+
+		draw(True)
+
+		moveLeft(78)
+
+		circle(110,280)
+
+		sleep(6)

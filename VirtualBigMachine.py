@@ -1,3 +1,4 @@
+import sys
 import ast
 import re
 import turtle
@@ -6,6 +7,7 @@ import time
 regex_int = '^[0-9]+$'
 regex_float = '[0-9]*\.[0-9]+|[0-9]+'
 regex_boolean = '(^True$|^False$)'
+regex_color = '#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 
 
 class BigMachine:
@@ -29,10 +31,14 @@ class BigMachine:
         # const 500000 - 600000
         self._fatGlobalMemory = 600000 * [""]
 
+        self._screen_dim = True
+
         self._screen = turtle.Screen()
         self._turtle = turtle.Turtle()
         self._start_x = self._turtle.setx(0)
         self._start_y = self._turtle.sety(0)
+        self._turtle.pensize(2)
+        self._turtle.speed(9)
 
         with open(filename) as fp:
             line = fp.readline()
@@ -57,7 +63,7 @@ class BigMachine:
         result = self._fatGlobalMemory[position]
         return result
 
-    def inset(self, addr, value):
+    def insert(self, addr, value):
         if addr / 1000000 >= 1:
             addr = addr - 1000000
             self._insert_in_fat_global_memory(addr, value)
@@ -407,12 +413,14 @@ class BigMachine:
             #     result = quadruple['result']['addr']
 
             # Read value from user
+
+            # <editor-fold desc="IO">
             elif quadruple['operator'] == 'INPUT':
 
                 result = quadruple['result']
                 addr = result['addr']
 
-                _input = input("<- ")
+                _input = input("<- ").strip()
                 # Variable is of type int
                 if result['type_var'] == 'INT':
                     if re.match(regex_boolean, _input):
@@ -449,7 +457,7 @@ class BigMachine:
                         # if string value, will return the sum of all the ascii characters
                         _input = 0
 
-                self.inset(addr, _input)
+                self.insert(addr, _input)
 
             # Show value in terminal
             elif quadruple['operator'] == 'PRINT':
@@ -462,7 +470,86 @@ class BigMachine:
                     aux = self._get_value_fat_memory(result['addr'])
 
                 print("-> {} ".format(aux))
+            # </editor-fold>
 
+            # <editor-fold desc="MOVE">
+            elif quadruple['operator'] == 'MOVEUP':
+
+                up = self.get_value(quadruple['result']['addr'])
+                self._turtle.setheading(90)
+                self._turtle.forward(up)
+
+            elif quadruple['operator'] == 'MOVEDOWN':
+
+                move = self.get_value(quadruple['result']['addr'])
+                self._turtle.setheading(270)
+                self._turtle.forward(move)
+
+            elif quadruple['operator'] == 'MOVERIGHT':
+
+                move = self.get_value(quadruple['result']['addr'])
+                self._turtle.setheading(0)
+                self._turtle.forward(move)
+
+            elif quadruple['operator'] == 'MOVELEFT':
+
+                move = self.get_value(quadruple['result']['addr'])
+                self._turtle.setheading(180)
+                self._turtle.forward(move)
+            # </editor-fold>
+
+            # <editor-fold desc="PEN">
+            elif quadruple['operator'] == 'COLOR':
+
+                color = self.get_value(quadruple['result']['addr'])
+
+                if re.match(regex_color, color):
+                    self._turtle.pencolor(color)
+                else:
+                    print("Invalid Hex color")
+                    sys.exit(1)
+
+            elif quadruple['operator'] == 'PENSIZE':
+                # TODO: Function not implemented on compiler only on VM
+                size = self.get_value(quadruple['result']['addr'])
+                self._turtle.pensize(size)
+
+            elif quadruple['operator'] == 'DRAW':
+
+                action = self.get_value(quadruple['result']['addr'])
+
+                if action:
+                    self._turtle.pendown()
+                else:
+                    self._turtle.penup()
+
+            elif quadruple['operator'] == 'STARTPOSITION':
+                x = self.get_value(quadruple['r_value']['addr'])
+                y = self.get_value(quadruple['result']['addr'])
+
+                self._turtle.setx(x)
+                self._turtle.sety(y)
+
+            elif quadruple['operator'] == 'SCREENSIZES':
+                result = quadruple['result']
+                addr = result['addr']
+                self.insert(addr, self._screen.screensize()[int(self._screen_dim)])
+                self._screen_dim = not self._screen_dim
+
+            elif quadruple['operator'] == 'GO':
+
+                x = self.get_value(quadruple['r_value']['addr'])
+                y = self.get_value(quadruple['result']['addr'])
+
+
+                self._turtle.penup()
+                self._turtle.goto(x, y)
+                self._turtle.pendown()
+
+
+            # </editor-fold>
+
+            # <editor-fold desc="DRAW">
             elif quadruple['operator'] == 'SQUARE':
                 angle = self.get_value(quadruple['r_value']['addr'])
                 length = self.get_value(quadruple['result']['addr'])
@@ -471,12 +558,29 @@ class BigMachine:
                     self._turtle.forward(length)
                     self._turtle.right(angle)
 
+            elif quadruple['operator'] == 'CIRCLE':
+                radius = self.get_value(quadruple['r_value']['addr'])
+                angle = self.get_value(quadruple['result']['addr'])
+                self._turtle.circle(radius, angle)
+
             elif quadruple['operator'] == 'CLEAN':
                 self._turtle.clear()
 
+
+            # </editor-fold>
+
+            elif quadruple['operator'] == 'FACTORIAL':
+                pass
             elif quadruple['operator'] == 'SLEEP':
                 ms = self.get_value(quadruple['result']['addr'])
+                print("...zzz")
                 time.sleep(float(ms))
+
+            else:
+                # print(quadruple)
+                # print("Error quadruple not found")
+                # sys.exit(0)
+                pass
 
     # <editor-fold desc="Prints for test">
     def _print_local_value(self, position):

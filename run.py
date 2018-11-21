@@ -19,9 +19,7 @@ def _main():
     else:
         print("No file to test found")
         sys.exit(1)
-        # print("-> ")
-        # for line in sys.stdin:
-        #     data = data + line
+
     _eat(data)
 
 

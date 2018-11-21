@@ -64,8 +64,8 @@ class SpecialFunction(IntEnum):
     CLEAN = 111
     DRAW = 112
     STARTPOSITION = 113
-    SCREENSIZESX = 114
-    SCREENSIZESY = 115
+    SCREENSIZES = 114
+
     GO = 116
     FIBONACCI = 117
     FACTORIAL = 118

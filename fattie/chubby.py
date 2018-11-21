@@ -55,6 +55,7 @@ class Chubby:
         self._dimension = 0
 
         self._next_const_addr = 500000
+
         sys.tracebacklimit = debug
 
     # <editor-fold desc="Variable and Function tables">
@@ -410,7 +411,7 @@ class Chubby:
             const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
             self.add_operand(const)
 
-        return self._constants[value]
+        return const
 
     # </editor-fold>
 
@@ -513,14 +514,24 @@ class Chubby:
 
         self._quadruple.add(QuadruplePack(SpecialFunction.STARTPOSITION, None, x, y))
 
-    def make_special_function_screen_size(self, sizes):
+    def make_special_function_screen_size(self, expected_type=None):
         """
         Make quadruple for start screen size (x and y), define the starting point of the pencil
         :param sizes:
         :return:
         """
 
-        self._quadruple.add(QuadruplePack(sizes))
+        exp1 = self._operand.pop()
+        exp2 = self._operand.pop()
+
+        if expected_type is not None:
+            if exp1.type_var not in expected_type or exp2.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.SCREENSIZES, result=exp1))
+        self._quadruple.add(QuadruplePack(SpecialFunction.SCREENSIZES, result=exp2))
 
     def make_special_function_go(self, expected_type=None):
         """
@@ -538,6 +549,21 @@ class Chubby:
                                                                              [item.name for item in expected_type]))
 
         self._quadruple.add(QuadruplePack(SpecialFunction.GO, None, x, y))
+
+    def make_special_function_circle(self, expected_type=None):
+
+        radius = self._operand.pop()
+        angle = self._operand.pop()
+
+        if expected_type is not None:
+            if radius.type_var not in expected_type or angle.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.CIRCLE, None, radius, angle))
+
+        pass
 
     def make_special_function_input(self):
 

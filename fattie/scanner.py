@@ -16,15 +16,13 @@ reserved = {
     "moveDown": "MOVEDOWN",
     "moveRight": "MOVERIGHT",
     "moveLeft": "MOVELEFT",
-    "angle": "ANGLE",
     "color": "COLOR",
     "circle": "CIRCLE",
     "square": "SQUARE",
     "clean": "CLEAN",
     "draw": "DRAW",
     "startPosition": "STARTPOSITION",
-    "screenSizesX": "SCREENSIZESX",
-    "screenSizesY": "SCREENSIZESY",
+    "screenSizes": "SCREENSIZES",
     "go": "GO",
     "fibonacci": "FIBONACCI",
     "factorial": "FACTORIAL",
@@ -37,8 +35,8 @@ reserved = {
     "Int": "INT",
     "Float": "FLOAT",
     "Char": "CHAR",
-    # "True": "TRUE",
-    # "False": "FALSE",
+    "True": "TRUE",
+    "False": "FALSE",
 
     "equals": "EQUALS",
     "less": "LESS",
@@ -84,7 +82,19 @@ def t_ignore_multi_comment(t):
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
-    # print(t.type + t.value)
+
+    if t.type == 'TRUE':
+        t.value = True
+    elif t.type == 'FALSE':
+        t.value = False
+
+    return t
+
+
+# Define a float number
+def t_CTEF(t):
+    r'[0-9]+\.[0-9]+'
+    t.value = float(t.value)
     return t
 
 
@@ -92,13 +102,6 @@ def t_ID(t):
 def t_CTEI(t):
     r'[0-9]+'
     t.value = int(t.value)
-    return t
-
-
-# Define a float number
-def t_CTEF(t):
-    r'[0-9]*\.[0-9]+|[0-9]+'
-    t.value = float(t.value)
     return t
 
 
