@@ -27,5 +27,9 @@ env.bak/
 test/*
 *.ft
 # Pycache
-__pycache__/
+fattie/belly/__pycached__/
+fattie/__pycached__/
+__pycache__/*
 fattie/core/__pycache__/
+fattie/__pycache__/
+fattie/belly/__pycache__/
