@@ -100,18 +100,25 @@ class BigMachine:
         return result
 
     def insert(self, addr, value):
+
         if addr / 1000000 >= 1:
             addr = addr - 1000000
             self._insert_in_fat_global_memory(addr, value)
         else:
             self._insert_in_fat_memory(addr, value)
 
-    def get_value(self, add):
-        if add >= 1000000:
-            add = add - 1000000
-            return self._get_value_fat_global_memory(add)
+    def get_value(self, position, reference='Direct'):
+
+        if position >= 1000000:
+            position = position - 1000000
+            return self._get_value_fat_global_memory(position)
+        if position >= 500000:
+            position = position - 500000
+            result = self._heavyConstants[position]
+            return result
         else:
-            return self._get_value_fat_memory(add)
+            return self._get_value_fat_memory(position)
+
 
     @staticmethod
     def _fibonacci(n):
@@ -158,15 +165,14 @@ class BigMachine:
         i = 0
         endFlag = False
         while not endFlag:
-            # print("i -> ", i)
 
             # assignation of constants
             if self._quadruples[i]['operator'] == 'CONST':
                 l_val = self._quadruples[i]['l_value']['addr']
                 result = self._quadruples[i]['result']['addr']
 
-                self._insert_in_fat_memory(result, l_val)
-                # self._print_global_value(result)result)
+                result = result - 500000
+                self._heavyConstants[result] = l_val
 
             # assignation of any variable
             elif self._quadruples[i]['operator'] == 'EQUAL':
@@ -202,21 +208,10 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                if l_val / 1000000 >= 1:
-                    l_val = l_val - 1000000
-                    l_operand = self._get_value_fat_global_memory(l_val)
-
-                else:
-                    l_operand = self._get_value_fat_memory(l_val)
+                l_operand = self.get_value(l_val)
 
                 # verify if is going to stract r_val from a global variable
-                if r_val / 1000000 >= 1:
-                    r_val = r_val - 1000000
-
-                    r_operand = self._get_value_fat_global_memory(r_val)
-
-                else:
-                    r_operand = self._get_value_fat_memory(r_val)
+                r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
@@ -226,9 +221,10 @@ class BigMachine:
                     # self._print_global_value(result)
 
                 else:
-
+                    access = self._quadruples[i]['result']['access']
                     evaluation = l_operand + r_operand
-                    self._insert_in_fat_memory(result, evaluation)
+                    self.insert(result, evaluation)
+
                     # self._print_global_value(result)result)
 
                 # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
@@ -240,21 +236,10 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                if l_val / 1000000 >= 1:
-                    l_val = l_val - 1000000
-                    l_operand = self._get_value_fat_global_memory(l_val)
-
-                else:
-                    l_operand = self._get_value_fat_memory(l_val)
+                l_operand = self.get_value(l_val)
 
                 # verify if is going to stract r_val from a global variable
-                if r_val / 1000000 >= 1:
-                    r_val = r_val - 1000000
-
-                    r_operand = self._get_value_fat_global_memory(r_val)
-
-                else:
-                    r_operand = self._get_value_fat_memory(r_val)
+                r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
@@ -264,7 +249,6 @@ class BigMachine:
                     # self._print_global_value(result)
 
                 else:
-
                     evaluation = l_operand - r_operand
                     self._insert_in_fat_memory(result, evaluation)
                     # # self._print_global_value(result)result)
@@ -276,21 +260,9 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                if l_val / 1000000 >= 1:
-                    l_val = l_val - 1000000
-                    l_operand = self._get_value_fat_global_memory(l_val)
-
-                else:
-                    l_operand = self._get_value_fat_memory(l_val)
-
+                l_operand = self.get_value(l_val)
                 # verify if is going to stract r_val from a global variable
-                if r_val / 1000000 >= 1:
-                    r_val = r_val - 1000000
-
-                    r_operand = self._get_value_fat_global_memory(r_val)
-
-                else:
-                    r_operand = self._get_value_fat_memory(r_val)
+                r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
@@ -300,8 +272,6 @@ class BigMachine:
                     # self._print_global_value(result)
 
                 else:
-                    print(l_operand)
-                    print(r_operand)
                     evaluation = l_operand * r_operand
                     self._insert_in_fat_memory(result, evaluation)
                     # self._print_global_value(result)result)
@@ -435,9 +405,13 @@ class BigMachine:
             # </editor-fold>
 
             elif self._quadruples[i]['operator'] == 'VER':
-
-                pass
-
+                exp = self.get_value(self._quadruples[i]['l_value']['addr'])
+                dim = int(self._quadruples[i]['result']['addr'])
+                if 0 <= exp <= dim:
+                    pass
+                else:
+                    print("The dimensions of the array dont match")
+                    sys.exit(0)
 
             # <editor-fold desc="IO">
 
@@ -488,13 +462,7 @@ class BigMachine:
 
             # Show value in terminal
             elif self._quadruples[i]['operator'] == 'PRINT':
-
-                result = self._quadruples[i]['result']
-                if result['addr'] / 1000000 >= 1:
-                    result = result - 1000000
-                    aux = self._get_value_fat_global_memory(result)
-                else:
-                    aux = self._get_value_fat_memory(result['addr'])
+                aux = self.get_value(self._quadruples[i]['result']['addr'])
 
                 print("-> {} ".format(aux))
             # </editor-fold>

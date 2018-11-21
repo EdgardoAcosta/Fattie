@@ -293,7 +293,6 @@ class Chubby:
         """
             Push the dimension to the dimension stack
         """
-
         if dim == 0:
             self._dim_stack.append(var.array)
         else:
@@ -313,7 +312,7 @@ class Chubby:
         if exp is not None:
 
             dimS = FluffyVariable(None, Types.INT, addr=dim.size)
-            dimM = FluffyVariable(None, Types.INT, addr=dim.m)
+            dimM = self.add_constants(dim.m, Types.INT)
             tem = FluffyVariable(None, exp.type_var, addr=address.set_addr(exp.type_var))
             #  Validate dim and generate VER
             self._quadruple.add(QuadruplePack(Operator.VER, exp, 0, dimS))
@@ -338,12 +337,14 @@ class Chubby:
                 _ = self._dim_stack.pop()
                 op = self._operand.pop()
                 op2 = self._operand.pop()
-                temp = FluffyVariable(None, None, addr=address.set_addr(op.type_var))
+                addr = address.set_addr(op.type_var)
+                temp = FluffyVariable(None, op.type_var, addr=addr)
                 q = QuadruplePack(Operator.PLUS, op, op2, temp)
                 self._quadruple.add(q)
                 self._operand.append(temp)
 
-        base = FluffyVariable(None, dim.var.type_var, addr=dim.var.addr)
+        base_add_var = self.add_constants(dim.var.addr, dim.var.type_var)
+        base = FluffyVariable(None, dim.var.type_var, addr=base_add_var.addr)
         dim = self._operand.pop()
         # Mark access to variables as an indirect
         temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT), access=Access.Indirect)

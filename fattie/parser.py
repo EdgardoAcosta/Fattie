@@ -274,7 +274,7 @@ def p_var_matrix(p):
 def p_n_array_2(p):
     '''n_array_2 : '''
     try:
-        chubby.push_dim(actual_var, 1)
+        chubby.push_dim(actual_var.parse(), 1)
     except BigError as e:
         e.print(p.lineno(-1))
 

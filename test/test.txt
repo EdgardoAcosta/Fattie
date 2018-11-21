@@ -1,10 +1,25 @@
+fun fn1(Int : p1):Int =>
+		var Int : test
+		test = 1
+		print(1)
+
 main =>
-		var Int : test11, test12, varTest, a[1]
-		var Int : b[2][12]
+		var Int : test11, test12, varTest
 		var Boolean : bol
+
 
 		test11 = 5
 		test12 = 12
-		varTest = test12 * test11
+		while test12 greater test11 =>
+		    circle(360, test11)
+		    moveUp(70)
+		    print("Print while")
+		    test11 = test11 + 4
+		    print(test11)
 
-		b[0][0] = 1
+
+
+		sleep(2)
+
+
+
