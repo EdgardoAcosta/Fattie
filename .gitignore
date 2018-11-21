@@ -8,6 +8,7 @@ out
 
 # Phyton
 *.out
+*.txt
 fattie/*.pyc
 
 # PLY
@@ -27,5 +28,5 @@ env.bak/
 test/*
 *.ft
 # Pycache
-__pycache__/
+__pycache__/*
 fattie/core/__pycache__/

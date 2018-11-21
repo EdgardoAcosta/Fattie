@@ -57,7 +57,7 @@ class BigMachine:
         result = self._fatGlobalMemory[position]
         return result
 
-    def inset(self, addr, value):
+    def insert(self, addr, value):
         if addr / 1000000 >= 1:
             addr = addr - 1000000
             self._insert_in_fat_global_memory(addr, value)
@@ -82,13 +82,14 @@ class BigMachine:
                 result = quadruple['result']['addr']
 
                 self._insert_in_fat_memory(result, l_val)
+                self._print_local_value(result)
 
             # assignation of any variable
             elif quadruple['operator'] == 'EQUAL':
                 l_val = quadruple['l_value']['addr']
                 result = quadruple['result']['addr']
 
-                # verify if l_val is a global or local direction
+                #verify if l_val is a global or local direction
                 if l_val >= 1000000:
                     l_val = l_val - 1000000
                     value = self._get_value_fat_global_memory(l_val)
@@ -99,8 +100,11 @@ class BigMachine:
                 if result / 1000000 >= 1:
                     result = result - 1000000
                     self._insert_in_fat_global_memory(result, value)
+                    self._print_global_value(result)
+
                 else:
                     self._insert_in_fat_memory(result, value)
+                    self._print_local_value(result)
 
             # add of two variables
             elif quadruple['operator'] == 'PLUS':
@@ -112,49 +116,34 @@ class BigMachine:
                 # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
                     l_val = l_val - 1000000
-
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_global_memory(l_val)
+                    l_operand = self._get_value_fat_global_memory(l_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_memory(l_val)
+                    l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
                 if r_val / 1000000 >= 1:
                     r_val = r_val - 1000000
 
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_global_memory(r_val)
+                    r_operand = self._get_value_fat_global_memory(r_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_memory(r_val)
+                    r_operand = self._get_value_fat_memory(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
                     result = result - 1000000
                     evaluation = l_operand + r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
+                    self._print_global_value(result)
 
                 else:
+
                     evaluation = l_operand + r_operand
                     self._insert_in_fat_memory(result, evaluation)
+                    self._print_local_value(result)
 
                 # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
-                # TODO: Checar la concatenacion de CHARS
 
             # subtract of two variables
             elif quadruple['operator'] == 'MINUS':
@@ -162,49 +151,35 @@ class BigMachine:
                 r_val = quadruple['r_value']['addr']
                 result = quadruple['result']['addr']
 
-                # verify if is going to stract l_val from a global variable
+                # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
                     l_val = l_val - 1000000
-
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_global_memory(l_val)
+                    l_operand = self._get_value_fat_global_memory(l_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_memory(l_val)
+                    l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
                 if r_val / 1000000 >= 1:
                     r_val = r_val - 1000000
 
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_global_memory(r_val)
+                    r_operand = self._get_value_fat_global_memory(r_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_memory(r_val)
+                    r_operand = self._get_value_fat_memory(r_val)
 
-                # verify if si goign to assign to a global variable
+                # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
                     result = result - 1000000
-                    evaluation = l_operand + r_operand
+                    evaluation = l_operand - r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
+                    self._print_global_value(result)
 
                 else:
+
                     evaluation = l_operand - r_operand
                     self._insert_in_fat_memory(result, evaluation)
+                    self._print_local_value(result)
 
             # multiply two variables
             elif quadruple['operator'] == 'TIMES':
@@ -212,99 +187,72 @@ class BigMachine:
                 r_val = quadruple['r_value']['addr']
                 result = quadruple['result']['addr']
 
-                # verify if is going to stract l_val from a global variable
+                # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
                     l_val = l_val - 1000000
-
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_global_memory(l_val)
+                    l_operand = self._get_value_fat_global_memory(l_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_memory(l_val)
+                    l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
                 if r_val / 1000000 >= 1:
                     r_val = r_val - 1000000
 
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_global_memory(r_val)
+                    r_operand = self._get_value_fat_global_memory(r_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_memory(r_val)
+                    r_operand = self._get_value_fat_memory(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
                     result = result - 1000000
-                    evaluation = l_operand + r_operand
+                    evaluation = l_operand * r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
+                    self._print_global_value(result)
 
                 else:
+
                     evaluation = l_operand * r_operand
                     self._insert_in_fat_memory(result, evaluation)
+                    self._print_local_value(result)
 
             # divide two variables
             elif quadruple['operator'] == 'DIVIDE':
+
                 l_val = quadruple['l_value']['addr']
                 r_val = quadruple['r_value']['addr']
                 result = quadruple['result']['addr']
 
-                # verify if is going to stract l_val from a global variable
+                # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
                     l_val = l_val - 1000000
-
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_global_memory(l_val)
+                    l_operand = self._get_value_fat_global_memory(l_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(l_val) >= 500000:
-                        l_operand = self._get_value_fat_memory(self._get_value_fat_memory(l_val))
-                    else:
-                        l_operand = self._get_value_fat_memory(l_val)
+                    l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
                 if r_val / 1000000 >= 1:
                     r_val = r_val - 1000000
 
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_global_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_global_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_global_memory(r_val)
+                    r_operand = self._get_value_fat_global_memory(r_val)
 
                 else:
-                    # verify if l_val is indirect o direct reference
-                    if self._get_value_fat_memory(r_val) >= 500000:
-                        r_operand = self._get_value_fat_memory(self._get_value_fat_memory(r_val))
-                    else:
-                        r_operand = self._get_value_fat_memory(r_val)
+                    r_operand = self._get_value_fat_memory(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
                     result = result - 1000000
-                    evaluation = l_operand + r_operand
+                    evaluation = l_operand / r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
+                    self._print_global_value(result)
 
                 else:
+
                     evaluation = l_operand / r_operand
                     self._insert_in_fat_memory(result, evaluation)
+                    self._print_local_value(result)
 
             # elif quadruple['operator'] == 'LESS':
             #     l_val = quadruple['l_value']['addr']
