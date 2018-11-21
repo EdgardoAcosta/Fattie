@@ -203,11 +203,20 @@ def p_sub_block_statement(p):
 
 
 def p_while(p):
-    '''while : WHILE expression n_while ARROW NEW_LINE block_statement'''
+    '''while : WHILE n_while_push expression n_while ARROW NEW_LINE block_statement'''
     try:
-        chubby.fill_jumps_while()
+        chubby.fill_jumps_while(line=1)
+        chubby.make_goto_while()
     except BigError as e:
         e.print(p.lineno(1))
+
+
+def p_n_while_push(p):
+    '''n_while_push : '''
+    try:
+        chubby.push_jump_while()
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_n_while(p):
@@ -342,7 +351,7 @@ def p_comparison(p):
     if p[1] is not None:
         try:
             chubby.add_operator(chubby.text_to_operator(p[1]))
-            chubby.check_operator_stack([Operator.LESS, Operator.GETRET, Operator.EQUALS, Operator.NOTEQUAL])
+            chubby.check_operator_stack([Operator.LESS, Operator.GREATER, Operator.EQUALS, Operator.NOTEQUAL])
         except BigError as e:
             e.print(p.lineno(1))
 

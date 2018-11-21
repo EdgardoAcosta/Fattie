@@ -13,12 +13,12 @@ regex_color = '#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 class BigMachine:
     """
      Function to start the VM, will initialize the necessary memory,allocate the variables and
-     read the quadruple generated from the compiler
+     read the self._quadruples generated from the compiler
      :return: None
      """
 
     def __init__(self, filename):
-        # stack with the quadruples
+        # stack with the self._quadrupless
         self._quadruples = list()
 
         # definition of the memory
@@ -89,7 +89,6 @@ class BigMachine:
         return fib
 
     def _draw_fib(self, fib, factor):
-        print(fib)
         num_sqr = len(fib)
         self._turtle.pensize(0)
         self._turtle.penup()
@@ -120,21 +119,24 @@ class BigMachine:
 
     # </editor-fold>
 
-    def process_quadruple(self):
-        for quadruple in self._quadruples:
+    def process_quadruples(self):
+        i = 0
+        endFlag = False
+        while not endFlag:
+            # print("i -> ", i)
 
             # assignation of constants
-            if quadruple['operator'] == 'CONST':
-                l_val = quadruple['l_value']['addr']
-                result = quadruple['result']['addr']
+            if self._quadruples[i]['operator'] == 'CONST':
+                l_val = self._quadruples[i]['l_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 self._insert_in_fat_memory(result, l_val)
-                self._print_local_value(result)
+                # self._print_global_value(result)result)
 
             # assignation of any variable
-            elif quadruple['operator'] == 'EQUAL':
-                l_val = quadruple['l_value']['addr']
-                result = quadruple['result']['addr']
+            elif self._quadruples[i]['operator'] == 'EQUAL':
+                l_val = self._quadruples[i]['l_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if l_val is a global or local direction
                 if l_val >= 1000000:
@@ -147,18 +149,18 @@ class BigMachine:
                 if result / 1000000 >= 1:
                     result = result - 1000000
                     self._insert_in_fat_global_memory(result, value)
-                    self._print_global_value(result)
+                    # self._print_global_value(result)
 
                 else:
                     self._insert_in_fat_memory(result, value)
-                    self._print_local_value(result)
+                    # self._print_global_value(result)result)
 
             # add of two variables
-            elif quadruple['operator'] == 'PLUS':
+            elif self._quadruples[i]['operator'] == 'PLUS':
 
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
-                result = quadruple['result']['addr']
+                l_val = self._quadruples[i]['l_value']['addr']
+                r_val = self._quadruples[i]['r_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
@@ -182,21 +184,21 @@ class BigMachine:
                     result = result - 1000000
                     evaluation = l_operand + r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
-                    self._print_global_value(result)
+                    # self._print_global_value(result)
 
                 else:
 
                     evaluation = l_operand + r_operand
                     self._insert_in_fat_memory(result, evaluation)
-                    self._print_local_value(result)
+                    # self._print_global_value(result)result)
 
                 # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
 
             # subtract of two variables
-            elif quadruple['operator'] == 'MINUS':
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
-                result = quadruple['result']['addr']
+            elif self._quadruples[i]['operator'] == 'MINUS':
+                l_val = self._quadruples[i]['l_value']['addr']
+                r_val = self._quadruples[i]['r_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
@@ -220,19 +222,19 @@ class BigMachine:
                     result = result - 1000000
                     evaluation = l_operand - r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
-                    self._print_global_value(result)
+                    # self._print_global_value(result)
 
                 else:
 
                     evaluation = l_operand - r_operand
                     self._insert_in_fat_memory(result, evaluation)
-                    self._print_local_value(result)
+                    # # self._print_global_value(result)result)
 
             # multiply two variables
-            elif quadruple['operator'] == 'TIMES':
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
-                result = quadruple['result']['addr']
+            elif self._quadruples[i]['operator'] == 'TIMES':
+                l_val = self._quadruples[i]['l_value']['addr']
+                r_val = self._quadruples[i]['r_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
                 if l_val / 1000000 >= 1:
@@ -256,156 +258,124 @@ class BigMachine:
                     result = result - 1000000
                     evaluation = l_operand * r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
-                    self._print_global_value(result)
+                    # self._print_global_value(result)
 
                 else:
 
                     evaluation = l_operand * r_operand
                     self._insert_in_fat_memory(result, evaluation)
-                    self._print_local_value(result)
+                    # self._print_global_value(result)result)
 
             # divide two variables
-            elif quadruple['operator'] == 'DIVIDE':
+            elif self._quadruples[i]['operator'] == 'DIVIDE':
 
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
-                result = quadruple['result']['addr']
-                print(self._fatMemory[0:9])
+                l_val = self._quadruples[i]['l_value']['addr']
+                r_val = self._quadruples[i]['r_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
                 l_operand = self.get_value(l_val)
-                # if l_val / 1000000 >= 1:
-                #     l_val = l_val - 1000000
-                #     l_operand = self._get_value_fat_global_memory(l_val)
-                #
-                # else:
-                #     l_operand = self._get_value_fat_memory(l_val)
 
                 # verify if is going to stract r_val from a global variable
                 r_operand = self.get_value(r_val)
-                # if r_val / 1000000 >= 1:
-                #     r_val = r_val - 1000000
-                #
-                #     r_operand = self._get_value_fat_global_memory(r_val)
-                #
-                # else:
-                #     r_operand = self._get_value_fat_memory(r_val)
 
                 # verify if si going to assign to a global variable
                 if result / 1000000 >= 1:
                     result = result - 1000000
                     evaluation = l_operand / r_operand
                     self._insert_in_fat_global_memory(result, evaluation)
-                    self._print_global_value(result)
+                    # self._print_global_value(result)
 
                 else:
                     evaluation = l_operand / r_operand
                     self._insert_in_fat_memory(result, evaluation)
-                    self._print_local_value(result)
+                    # self._print_global_value(result)result)
 
+            # <editor-fold desc="Logical operator">
+            elif self._quadruples[i]['operator'] == 'LESS':
+                l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
+                r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
+                result = self._quadruples[i]['result']['addr']
 
+                self.insert(result, (l_val < r_val))
 
-            elif quadruple['operator'] == 'ERA':
-                l_val = quadruple['l_value']['addr']
-                r_val = quadruple['r_value']['addr']
-                result = quadruple['result']['addr']
+            elif self._quadruples[i]['operator'] == 'GREATER':
+                l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
+                r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
+                result = self._quadruples[i]['result']['addr']
 
+                self.insert(result, (l_val > r_val))
 
-            # elif quadruple['operator'] == 'LESS':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'GREATER':
-            #      l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'NOTEQUAL':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'AND':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'OR':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'NOT':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'TRUE':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'FALSE':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'EQUALS':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'GOTO':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'GOTOF':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'GOSUB':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'UMINUS':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            # elif quadruple['operator'] == 'RETURN':
-            #    l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'ENPROC':
-            #      l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'END':
-            #      l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'PARAM':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
-            #
-            # elif quadruple['operator'] == 'GETRET':
-            #     l_val = quadruple['l_value']['addr']
-            #     r_val = quadruple['r_value']['addr']
-            #     result = quadruple['result']['addr']
+            elif self._quadruples[i]['operator'] == 'NOTEQUAL':
+                l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
+                r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
+                result = self._quadruples[i]['result']['addr']
 
-            # Read value from user
+                self.insert(result, (l_val != r_val))
+
+            elif self._quadruples[i]['operator'] == 'EQUALS':
+                l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
+                r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
+                result = self._quadruples[i]['result']['addr']
+
+                self.insert(result, (l_val == r_val))
+
+            elif self._quadruples[i]['operator'] == 'UMINUS':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+            # </editor-fold>
+
+            # <editor-fold desc="GOTO'S">
+            elif self._quadruples[i]['operator'] == 'GOTO':
+
+                i = self._quadruples[i]['result']['addr']
+                continue
+
+            elif self._quadruples[i]['operator'] == 'GOTOF':
+                expression = self.get_value(self._quadruples[i]['l_value']['addr'])
+
+                if not expression:
+                    i = self._quadruples[i]['result']['addr']
+                    continue
+            # </editor-fold>
+
+            # <editor-fold desc="Function">
+            elif self._quadruples[i]['operator'] == 'GOSUB':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+
+            elif self._quadruples[i]['operator'] == 'ENPROC':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+
+            elif self._quadruples[i]['operator'] == 'RETURN':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+
+            elif self._quadruples[i]['operator'] == 'PARAM':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+
+            elif self._quadruples[i]['operator'] == 'GETRET':
+                l_val = self._quadruples[i]['l_value']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
+
+            elif self._quadruples[i]['operator'] == 'END':
+                endFlag = True
+            # </editor-fold>
 
             # <editor-fold desc="IO">
-            elif quadruple['operator'] == 'INPUT':
 
-                result = quadruple['result']
+            # Read value from user
+            elif self._quadruples[i]['operator'] == 'INPUT':
+
+                result = self._quadruples[i]['result']
                 addr = result['addr']
 
                 _input = input("<- ").strip()
@@ -448,9 +418,9 @@ class BigMachine:
                 self.insert(addr, _input)
 
             # Show value in terminal
-            elif quadruple['operator'] == 'PRINT':
+            elif self._quadruples[i]['operator'] == 'PRINT':
 
-                result = quadruple['result']
+                result = self._quadruples[i]['result']
                 if result['addr'] / 1000000 >= 1:
                     result = result - 1000000
                     aux = self._get_value_fat_global_memory(result)
@@ -461,35 +431,35 @@ class BigMachine:
             # </editor-fold>
 
             # <editor-fold desc="MOVE">
-            elif quadruple['operator'] == 'MOVEUP':
+            elif self._quadruples[i]['operator'] == 'MOVEUP':
 
-                up = self.get_value(quadruple['result']['addr'])
+                up = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.setheading(90)
                 self._turtle.forward(up)
 
-            elif quadruple['operator'] == 'MOVEDOWN':
+            elif self._quadruples[i]['operator'] == 'MOVEDOWN':
 
-                move = self.get_value(quadruple['result']['addr'])
+                move = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.setheading(270)
                 self._turtle.forward(move)
 
-            elif quadruple['operator'] == 'MOVERIGHT':
+            elif self._quadruples[i]['operator'] == 'MOVERIGHT':
 
-                move = self.get_value(quadruple['result']['addr'])
+                move = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.setheading(0)
                 self._turtle.forward(move)
 
-            elif quadruple['operator'] == 'MOVELEFT':
+            elif self._quadruples[i]['operator'] == 'MOVELEFT':
 
-                move = self.get_value(quadruple['result']['addr'])
+                move = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.setheading(180)
                 self._turtle.forward(move)
             # </editor-fold>
 
             # <editor-fold desc="PEN">
-            elif quadruple['operator'] == 'COLOR':
+            elif self._quadruples[i]['operator'] == 'COLOR':
 
-                color = self.get_value(quadruple['result']['addr'])
+                color = self.get_value(self._quadruples[i]['result']['addr'])
 
                 if re.match(regex_color, color):
                     self._turtle.pencolor(color)
@@ -497,37 +467,37 @@ class BigMachine:
                     print("Invalid Hex color")
                     sys.exit(1)
 
-            elif quadruple['operator'] == 'PENSIZE':
+            elif self._quadruples[i]['operator'] == 'PENSIZE':
                 # TODO: Function not implemented on compiler only on VM
-                size = self.get_value(quadruple['result']['addr'])
+                size = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.pensize(size)
 
-            elif quadruple['operator'] == 'DRAW':
+            elif self._quadruples[i]['operator'] == 'DRAW':
 
-                action = self.get_value(quadruple['result']['addr'])
+                action = self.get_value(self._quadruples[i]['result']['addr'])
 
                 if action:
                     self._turtle.pendown()
                 else:
                     self._turtle.penup()
 
-            elif quadruple['operator'] == 'STARTPOSITION':
-                x = self.get_value(quadruple['r_value']['addr'])
-                y = self.get_value(quadruple['result']['addr'])
+            elif self._quadruples[i]['operator'] == 'STARTPOSITION':
+                x = self.get_value(self._quadruples[i]['r_value']['addr'])
+                y = self.get_value(self._quadruples[i]['result']['addr'])
 
                 self._turtle.setx(x)
                 self._turtle.sety(y)
 
-            elif quadruple['operator'] == 'SCREENSIZES':
-                result = quadruple['result']
+            elif self._quadruples[i]['operator'] == 'SCREENSIZES':
+                result = self._quadruples[i]['result']
                 addr = result['addr']
                 self.insert(addr, self._screen.screensize()[int(self._screen_dim)])
                 self._screen_dim = not self._screen_dim
 
-            elif quadruple['operator'] == 'GO':
+            elif self._quadruples[i]['operator'] == 'GO':
 
-                x = self.get_value(quadruple['r_value']['addr'])
-                y = self.get_value(quadruple['result']['addr'])
+                x = self.get_value(self._quadruples[i]['r_value']['addr'])
+                y = self.get_value(self._quadruples[i]['result']['addr'])
 
                 self._turtle.penup()
                 self._turtle.goto(x, y)
@@ -537,46 +507,62 @@ class BigMachine:
             # </editor-fold>
 
             # <editor-fold desc="DRAW">
-            elif quadruple['operator'] == 'SQUARE':
-                angle = self.get_value(quadruple['r_value']['addr'])
-                length = self.get_value(quadruple['result']['addr'])
+            elif self._quadruples[i]['operator'] == 'SQUARE':
+                angle = self.get_value(self._quadruples[i]['r_value']['addr'])
+                length = self.get_value(self._quadruples[i]['result']['addr'])
 
                 for i in range(4):
                     self._turtle.forward(length)
                     self._turtle.right(angle)
 
-            elif quadruple['operator'] == 'CIRCLE':
-                radius = self.get_value(quadruple['r_value']['addr'])
-                angle = self.get_value(quadruple['result']['addr'])
+            elif self._quadruples[i]['operator'] == 'CIRCLE':
+                radius = self.get_value(self._quadruples[i]['r_value']['addr'])
+                angle = self.get_value(self._quadruples[i]['result']['addr'])
                 self._turtle.circle(radius, angle)
 
-            elif quadruple['operator'] == 'CLEAN':
+            elif self._quadruples[i]['operator'] == 'CLEAN':
                 self._turtle.clear()
 
 
             # </editor-fold>
 
             # <editor-fold desc="Special Functions">
-            elif quadruple['operator'] == 'FIBONACCI':
+            elif self._quadruples[i]['operator'] == 'FIBONACCI':
 
-                n = self.get_value(quadruple['result']['addr'])
+                n = self.get_value(self._quadruples[i]['result']['addr'])
                 fib = self._fibonacci(n)
                 self._turtle.setx(0)
                 self._turtle.sety(0)
                 self._draw_fib(fib, 6)
 
 
-            elif quadruple['operator'] == 'SLEEP':
-                ms = self.get_value(quadruple['result']['addr'])
+            elif self._quadruples[i]['operator'] == 'SLEEP':
+                ms = self.get_value(self._quadruples[i]['result']['addr'])
                 print("...zzz")
                 time.sleep(float(ms))
             # </editor-fold>
 
+            # elif self._quadruples[i]['operator'] == 'AND':
+            #     l_val = self._quadruples[i]['l_value']['addr']
+            #     r_val = self._quadruples[i]['r_value']['addr']
+            #     result = self._quadruples[i]['result']['addr']
+            #
+            # elif self._quadruples[i]['operator'] == 'OR':
+            #     l_val = self._quadruples[i]['l_value']['addr']
+            #     r_val = self._quadruples[i]['r_value']['addr']
+            #     result = self._quadruples[i]['result']['addr']
+            #
+            # elif self._quadruples[i]['operator'] == 'NOT':
+            #     l_val = self._quadruples[i]['l_value']['addr']
+            #     r_val = self._quadruples[i]['r_value']['addr']
+            #     result = self._quadruples[i]['result']['addr']
+
             else:
-                # print(quadruple)
-                # print("Error quadruple not found")
+                # print(self._quadruples[i])
+                # print("Error self._quadruples[i] not found")
                 # sys.exit(0)
                 pass
+            i += 1
 
     # <editor-fold desc="Prints for test">
     def _print_local_value(self, position):
@@ -589,4 +575,4 @@ class BigMachine:
 
 if __name__ == '__main__':
     big_machine = BigMachine("fat.txt")
-    big_machine.process_quadruple()
+    big_machine.process_quadruples()

@@ -23,7 +23,7 @@ ENV/
 env.bak/
 
 # Test files
-test/*
+test/
 *.ft
 
 # Pycache

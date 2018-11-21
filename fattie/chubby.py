@@ -193,8 +193,14 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="WHILE condition">
-    def fill_jumps_while(self):
-        self._fill()
+    def fill_jumps_while(self, line=0):
+        self._fill(line)
+
+    def push_jump_while(self):
+        self._jumps.append(self._quadruple.index)
+
+    def make_goto_while(self):
+       self._jump(True)
 
     # </editor-fold>
 
@@ -366,9 +372,15 @@ class Chubby:
         # Generate GotoFalse, return to fill the address
         self._quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
 
-    def _jump(self):
-        self._jumps.append(self._quadruple.index)
-        self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
+    def _jump(self, stack=False):
+
+        if stack:
+            jump = self._jumps.pop()
+            addr = FluffyVariable(None, None, addr=jump)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, result=addr))
+        else:
+            self._jumps.append(self._quadruple.index)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
 
     # Fill jumps
     def _fill(self, line=0):
