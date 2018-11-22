@@ -1,6 +1,6 @@
 fun fn1(Int : p1, Int : p2):Int =>
 		var Int : test
-		test = 1
+		test = p2 * p2
 		print(test)
 
 		return test

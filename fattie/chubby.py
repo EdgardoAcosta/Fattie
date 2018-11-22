@@ -285,7 +285,7 @@ class Chubby:
             raise BigError.mismatch_params(
                 "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
         param = FluffyVariable(None, None, addr=self._count_params)
-        self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
+        self._quadruple.add(QuadruplePack(Operator.PARAM, argument, None, param))
         self._count_params += 1
 
     def find_function_call(self, _id):
@@ -295,10 +295,6 @@ class Chubby:
             raise BigError.undefined_function("The function {} is not declared".format(_id))
 
         self._count_params = 0
-
-    def make_parm(self):
-        op = self._operand.pop()
-        _type = self.active_function_call.params[self._count_params]
 
     # </editor-fold>
 

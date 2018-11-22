@@ -20,7 +20,7 @@ class FatMemory:
 
     def __init__(self, _int=0, _float=0, _char=0, _boo=0):
         self.fat_memory = {
-            1: [None] * _int,
+            1: [None] * _int ,
             2: [None] * _float,
             3: [None] * _char,
             4: [None] * _boo
@@ -62,6 +62,10 @@ class BigMachine:
         self._saved_quadruple = [0]
 
         self._return_values = []
+
+        self._settable_memory = None
+
+        self._params = []
         # </editor-fold>
 
         # <editor-fold desc="Turtle default settings">
@@ -110,6 +114,8 @@ class BigMachine:
             position = (addr - 1000000) % 100000
             self._fatGlobalMemory[self._check_type_global(addr)][position] = value
         else:
+            print("add {} - type {} - value {}".format(addr % 100000, self._check_type_local(addr), value))
+            print(  self._bigMemory[-1].fat_memory)
             self._bigMemory[-1].fat_memory[self._check_type_local(addr)][addr % 100000] = value
 
     def get_value(self, position, reference='Direct'):
@@ -168,7 +174,7 @@ class BigMachine:
         i = 0
         endFlag = False
         while not endFlag:
-            # print("i -> ", i)
+            print("i -> ", i)
 
             # assignation of constants
             if self._quadruples[i]['operator'] == 'CONST':
@@ -197,14 +203,14 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'PLUS':
 
                 l_val = self._quadruples[i]['l_value']['addr']
-                r_val = self._quadruples[i]['r_value']
-                result = self._quadruples[i]['result']
+                r_val = self._quadruples[i]['r_value']['addr']
+                result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val['addr'])
+                l_operand = self.get_value(l_val)
 
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val['addr'])
+                r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
                 evaluation = l_operand + r_operand
@@ -283,10 +289,7 @@ class BigMachine:
 
             # implementation of the era for functions
             elif self._quadruples[i]['operator'] == 'ERA':
-                memory = self._quadruples[i]['result']['addr']
-
-                # # add to the bigMemory stack
-                self._bigMemory.append(FatMemory(memory['INT'], memory['FLOAT'], memory['CHAR'], memory['BOOLEAN']))
+                self._settable_memory = self._quadruples[i]['result']['addr']
 
             elif self._quadruples[i]['operator'] == 'NOTEQUAL':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
@@ -328,6 +331,16 @@ class BigMachine:
                 self._saved_quadruple.append(i + 1)
                 # Goto addres of GOSUB
                 i = self._quadruples[i]['result']['addr']
+                memory = self._settable_memory
+                # TODO: Fix this
+                self._bigMemory.append(FatMemory(memory['INT'] + 1, memory['FLOAT'], memory['CHAR'], memory['BOOLEAN']))
+                if len(self._params) > 0:
+                    for param in self._params:
+                        for key in param:
+                            self.insert(key, param[key])
+
+                self._settable_memory = []
+
                 continue
                 pass
 
@@ -347,16 +360,14 @@ class BigMachine:
                 # self.insert(result, value)
 
             elif self._quadruples[i]['operator'] == 'PARAM':
-                l_val = self._quadruples[i]['l_value']
-                r_val = self._quadruples[i]['r_value']
-                result = self._quadruples[i]['result']
+                value = self.get_value(self._quadruples[i]['l_value']['addr'])
+
+                self._params.append({self._quadruples[i]['result']['addr']: value})
 
             elif self._quadruples[i]['operator'] == 'GETRET':
                 result = self._quadruples[i]['result']['addr']
                 self._bigMemory.pop()
                 self.insert(result, self._return_values.pop())
-
-
 
                 # Else return is empty
             elif self._quadruples[i]['operator'] == 'END':
