@@ -48,6 +48,7 @@ class Chubby:
 
         self._era = []
         self.active_function = ActiveFunction()
+        self.active_function_call = None
         self._count_params = 0
 
         self._array_op = []
@@ -286,6 +287,18 @@ class Chubby:
         param = FluffyVariable(None, None, addr=self._count_params)
         self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
         self._count_params += 1
+
+    def find_function_call(self, _id):
+        self.active_function_call = self.find_function(_id)
+
+        if self.active_function_call is None:
+            raise BigError.undefined_function("The function {} is not declared".format(_id))
+
+        self._count_params = 0
+
+    def make_parm(self):
+        op = self._operand.pop()
+        _type = self.active_function_call.params[self._count_params]
 
     # </editor-fold>
 

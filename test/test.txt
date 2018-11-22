@@ -1,10 +1,9 @@
-fun fn1(Int : p1):Int =>
+fun fn1(Int : p1, Int : p2):Int =>
 		var Int : test
 		test = 1
-		if test greater 1 =>
-				print("HOLA MUNDO")
-		else =>
-				print("ADIOS MUNDO")
+		print(test)
+
+		return test
 
 main =>
 		var Int : test11, test12, varTest
@@ -12,8 +11,10 @@ main =>
 		startPosition(0,0)
 
 		color("#0000ff ")
+		test12 = 12
 
-		test11 = fn1(test12)
+		test11 = fn1(test12, test12)
+		print(test11)
 
 
 

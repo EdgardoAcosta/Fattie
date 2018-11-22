@@ -3,11 +3,14 @@ import ast
 import re
 import turtle
 import time
+from fattie.belly.fluffyvariable import local_addr, global_addr
+from fattie.belly.types import Types
 
 regex_int = '^[0-9]+$'
 regex_float = '[0-9]*\.[0-9]+|[0-9]+'
 regex_boolean = '(^True$|^False$)'
 regex_color = '#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+types = [Types.INT, Types.FLOAT, Types.CHAR, Types.BOOLEAN]
 
 
 # definition of the globalmemory for variables
@@ -15,8 +18,14 @@ regex_color = '#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
 # const 500000 - 600000
 class FatMemory:
 
-    def __init__(self, cell=list()):
-        self.fat_memory = cell
+    def __init__(self, _int=0, _float=0, _char=0, _boo=0):
+        self.fat_memory = {
+            1: [None] * _int,
+            2: [None] * _float,
+            3: [None] * _char,
+            4: [None] * _boo
+
+        }
 
 
 # virtual machine
@@ -31,6 +40,8 @@ class BigMachine:
         # stack with the self._quadrupless
         self._quadruples = list()
 
+        # <editor-fold desc="Memory initialization">
+
         # definition of the stack where we are going to store the memory necesary for the functions
         # this memories are fat memories with variables in them
         self._bigMemory = list()
@@ -38,7 +49,7 @@ class BigMachine:
         # definition of the globalmemory for variables
         # Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
         # const 500000 - 600000
-        self._fatGlobalMemory = 600000 * [None]
+        self._fatGlobalMemory = []
 
         # definition of the memory for the constants
         # it stores the constants values
@@ -47,14 +58,13 @@ class BigMachine:
         # this memory save the memory requirements for functions
         self._memorySizes = list()
 
-        # insertion of the first memoryfat inside of bigmemory
-        # insertion of the first variable table inside of the stack
-        # this first table of variables is for the main
-        self._bigMemory.append(FatMemory(600000 * [None]))
-
         # Retorn to quadruple
         self._saved_quadruple = [0]
 
+        self._return_values = []
+        # </editor-fold>
+
+        # <editor-fold desc="Turtle default settings">
         self._screen_dim = True
 
         self._screen = turtle.Screen()
@@ -64,7 +74,9 @@ class BigMachine:
         self._turtle.pensize(2)
         self._turtle.speed()
         self._screen.screensize(400, 400)
+        # </editor-fold>
 
+        # <editor-fold desc="Read file">
         with open(filename) as fp:
             line = fp.readline()
             count = 1
@@ -72,15 +84,9 @@ class BigMachine:
                 self._quadruples.append(ast.literal_eval(line))
                 line = fp.readline()
                 count += 1
+        # </editor-fold>
 
     # <editor-fold desc="Set, get">
-    def _insert_in_fat_memory(self, position, value):
-        print("position ", position)
-        self._bigMemory[-1].fat_memory[position] = value
-
-    def _get_value_fat_memory(self, position):
-        result = self._bigMemory[-1].fat_memory[position]
-        return result
 
     def _get_value_heavy_constants(self, position):
         position = position - 500000
@@ -93,32 +99,29 @@ class BigMachine:
         else:
             return False
 
-    def _insert_in_fat_global_memory(self, position, value):
-        self._fatGlobalMemory[position] = value
+    def _check_type_local(self, addr):
+        return types[addr // 100000].value
 
-    def _get_value_fat_global_memory(self, position):
-        result = self._fatGlobalMemory[position]
-        return result
+    def _check_type_global(self, addr):
+        return types[addr // 100000].value
 
     def insert(self, addr, value):
-
         if addr / 1000000 >= 1:
-            addr = addr - 1000000
-            self._insert_in_fat_global_memory(addr, value)
+            position = (addr - 1000000) % 100000
+            self._fatGlobalMemory[self._check_type_global(addr)][position] = value
         else:
-            self._insert_in_fat_memory(addr, value)
+            self._bigMemory[-1].fat_memory[self._check_type_local(addr)][addr % 100000] = value
 
     def get_value(self, position, reference='Direct'):
 
         if position >= 1000000:
-            position = position - 1000000
-            return self._get_value_fat_global_memory(position)
-        if position >= 500000:
+            return self._fatGlobalMemory[self._check_type_global(position - 1000000)][position]
+        elif position >= 500000:
             position = position - 500000
             result = self._heavyConstants[position]
             return result
         else:
-            return self._get_value_fat_memory(position)
+            return self._bigMemory[-1].fat_memory[self._check_type_global(position)][position % 100000]
 
     @staticmethod
     def _fibonacci(n):
@@ -165,7 +168,7 @@ class BigMachine:
         i = 0
         endFlag = False
         while not endFlag:
-            print("i -> ", i)
+            # print("i -> ", i)
 
             # assignation of constants
             if self._quadruples[i]['operator'] == 'CONST':
@@ -185,48 +188,28 @@ class BigMachine:
                     value = self._get_value_heavy_constants(l_val)
                 else:
                     # verify if l_val is a global or local direction
-                    if l_val >= 1000000:
-                        l_val = l_val - 1000000
-                        value = self._get_value_fat_global_memory(l_val)
-                    else:
-                        value = self._get_value_fat_memory(l_val)
+                    value = self.get_value(l_val)
 
                 # verify if is going to assign to a global variable
-                if result / 1000000 >= 1:
-                    result = result - 1000000
-                    self._insert_in_fat_global_memory(result, value)
-                    # self._print_global_value(result)
-
-                else:
-                    self._insert_in_fat_memory(result, value)
-                    # self._print_global_value(result)result)
+                self.insert(result, value)
 
             # add of two variables
             elif self._quadruples[i]['operator'] == 'PLUS':
 
                 l_val = self._quadruples[i]['l_value']['addr']
-                r_val = self._quadruples[i]['r_value']['addr']
-                result = self._quadruples[i]['result']['addr']
+                r_val = self._quadruples[i]['r_value']
+                result = self._quadruples[i]['result']
 
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val)
+                l_operand = self.get_value(l_val['addr'])
 
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val)
+                r_operand = self.get_value(r_val['addr'])
 
                 # verify if si going to assign to a global variable
-                if result / 1000000 >= 1:
-                    result = result - 1000000
-                    evaluation = l_operand + r_operand
-                    self._insert_in_fat_global_memory(result, evaluation)
-                    # self._print_global_value(result)
+                evaluation = l_operand + r_operand
 
-                else:
-                    access = self._quadruples[i]['result']['access']
-                    evaluation = l_operand + r_operand
-                    self.insert(result, evaluation)
-
-                    # self._print_global_value(result)result)
+                self.insert(result, evaluation)
 
                 # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
 
@@ -243,16 +226,9 @@ class BigMachine:
                 r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
-                if result / 1000000 >= 1:
-                    result = result - 1000000
-                    evaluation = l_operand - r_operand
-                    self._insert_in_fat_global_memory(result, evaluation)
-                    # self._print_global_value(result)
+                evaluation = l_operand - r_operand
 
-                else:
-                    evaluation = l_operand - r_operand
-                    self._insert_in_fat_memory(result, evaluation)
-                    # # self._print_global_value(result)result)
+                self.insert(result, evaluation)
 
             # multiply two variables
             elif self._quadruples[i]['operator'] == 'TIMES':
@@ -266,16 +242,10 @@ class BigMachine:
                 r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
-                if result / 1000000 >= 1:
-                    result = result - 1000000
-                    evaluation = l_operand * r_operand
-                    self._insert_in_fat_global_memory(result, evaluation)
-                    # self._print_global_value(result)
+                evaluation = l_operand * r_operand
 
-                else:
-                    evaluation = l_operand * r_operand
-                    self._insert_in_fat_memory(result, evaluation)
-                    # self._print_global_value(result)result)
+                self.insert(result, evaluation)
+
 
             # divide two variables
             elif self._quadruples[i]['operator'] == 'DIVIDE':
@@ -291,52 +261,32 @@ class BigMachine:
                 r_operand = self.get_value(r_val)
 
                 # verify if si going to assign to a global variable
-                if result / 1000000 >= 1:
-                    result = result - 1000000
-                    evaluation = l_operand / r_operand
-                    self._insert_in_fat_global_memory(result, evaluation)
-                    # self._print_global_value(result)
 
-                else:
-                    evaluation = l_operand / r_operand
-                    self._insert_in_fat_memory(result, evaluation)
-                    # self._print_global_value(result)result)
+                evaluation = l_operand / r_operand
+
+                self.insert(result, evaluation)
+
 
             # <editor-fold desc="Logical operator">
             elif self._quadruples[i]['operator'] == 'LESS':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
                 r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
-                result = self._quadruples[i]['result']['addr']
+                result = self._quadruples[i]['result']  # ['addr']
 
-                self.insert(result, (l_val < r_val))
+                self.insert(result['addr'], (l_val < r_val))
 
             elif self._quadruples[i]['operator'] == 'GREATER':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
                 r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
-                result = self._quadruples[i]['result']['addr']
-                self.insert(result, (l_val > r_val))
+                result = self._quadruples[i]['result']
+                self.insert(result['addr'], (l_val > r_val))
 
             # implementation of the era for functions
             elif self._quadruples[i]['operator'] == 'ERA':
-                print("ERA ----")
                 memory = self._quadruples[i]['result']['addr']
-                total_size = sum(memory.values())
-                print("ALLOCATE ", memory)
 
-                print("TOTAL Size ", total_size)
-                print("----")
-
-                # # add the memory slots necesary for the function
-                # memoryview.append(
-                #     {"INT": memory['INT'], "FLOAT": memory["FLOAT"], "CHAR": memory["CHAR"], "BOOLEAN": memory["CHAR"]})
-
-                # # sum of all the sizes
-                # total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
-                #
                 # # add to the bigMemory stack
-                self._bigMemory.append(FatMemory(total_size * [None]))
-                pass
-
+                self._bigMemory.append(FatMemory(memory['INT'], memory['FLOAT'], memory['CHAR'], memory['BOOLEAN']))
 
             elif self._quadruples[i]['operator'] == 'NOTEQUAL':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
@@ -389,7 +339,9 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'RETURN':
 
                 value = self.get_value(self._quadruples[i]['l_value']['addr'])
+                self._return_values.append(value)
                 result = self._quadruples[i]['result']['addr']
+
                 pass
 
                 # self.insert(result, value)
@@ -400,12 +352,11 @@ class BigMachine:
                 result = self._quadruples[i]['result']
 
             elif self._quadruples[i]['operator'] == 'GETRET':
-                result = self._quadruples[i]['result']
-                if result is not None:
-                    temp = self.get_value(result['addr'])
-                    print("Return value ", temp)
-                    self._bigMemory.pop()
-                    print("POP Memory")
+                result = self._quadruples[i]['result']['addr']
+                self._bigMemory.pop()
+                self.insert(result, self._return_values.pop())
+
+
 
                 # Else return is empty
             elif self._quadruples[i]['operator'] == 'END':
@@ -580,7 +531,6 @@ class BigMachine:
                 self._turtle.sety(0)
                 self._draw_fib(fib, 6)
 
-
             elif self._quadruples[i]['operator'] == 'SLEEP':
                 ms = self.get_value(self._quadruples[i]['result']['addr'])
                 print("...zzz")
@@ -591,14 +541,6 @@ class BigMachine:
             else:
                 pass
             i += 1
-
-    # <editor-fold desc="Prints for test">
-    def _print_local_value(self, position):
-        print("local:{}=>{}".format(position, self._bigMemory[-1].fat_memory[position]))
-
-    def _print_global_value(self, position):
-        print("global:{}=>{}".format(position, self._bigMemory[-1].fat_memory[position]))
-    # </editor-fold>
 
 
 if __name__ == '__main__':
