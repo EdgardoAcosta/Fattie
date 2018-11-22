@@ -53,7 +53,7 @@ class BigMachine:
         self._bigMemory.append(FatMemory(600000 * [None]))
 
         # Retorn to quadruple
-        self._saved_quadruple = 0
+        self._saved_quadruple = [0]
 
         self._screen_dim = True
 
@@ -75,6 +75,7 @@ class BigMachine:
 
     # <editor-fold desc="Set, get">
     def _insert_in_fat_memory(self, position, value):
+        print("position ", position)
         self._bigMemory[-1].fat_memory[position] = value
 
     def _get_value_fat_memory(self, position):
@@ -118,7 +119,6 @@ class BigMachine:
             return result
         else:
             return self._get_value_fat_memory(position)
-
 
     @staticmethod
     def _fibonacci(n):
@@ -165,6 +165,7 @@ class BigMachine:
         i = 0
         endFlag = False
         while not endFlag:
+            print("i -> ", i)
 
             # assignation of constants
             if self._quadruples[i]['operator'] == 'CONST':
@@ -317,22 +318,24 @@ class BigMachine:
 
             # implementation of the era for functions
             elif self._quadruples[i]['operator'] == 'ERA':
+                print("ERA ----")
+                memory = self._quadruples[i]['result']['addr']
+                total_size = sum(memory.values())
+                print("ALLOCATE ", memory)
 
-                result = self._quadruples[i]['result']['addr']
-                slots_int = result['INT']
-                slots_float = result['FLOAT']
-                slots_char = result['CHAR']
-                slots_boolean = result['BOOLEAN']
+                print("TOTAL Size ", total_size)
+                print("----")
 
-                # add the memory slots necesary for the function
-                memoryview.append(
-                    {"INT": slots_int, "FLOAT": slots_float, "CHAR": slots_char, "BOOLEAN": slots_boolean})
+                # # add the memory slots necesary for the function
+                # memoryview.append(
+                #     {"INT": memory['INT'], "FLOAT": memory["FLOAT"], "CHAR": memory["CHAR"], "BOOLEAN": memory["CHAR"]})
 
-                # sum of all the sizes
-                total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
-
-                # add to the bigMemory stack
+                # # sum of all the sizes
+                # total_size = memoryview['INT'] + memoryview['FLOAT'] + memoryview['CHAR'] + memoryview['BOOLEAN']
+                #
+                # # add to the bigMemory stack
                 self._bigMemory.append(FatMemory(total_size * [None]))
+                pass
 
 
             elif self._quadruples[i]['operator'] == 'NOTEQUAL':
@@ -371,16 +374,17 @@ class BigMachine:
 
             # <editor-fold desc="Function">
             elif self._quadruples[i]['operator'] == 'GOSUB':
-                # self._saved_quadruple = i + 1
-                # i = self._quadruples[i]['result']['addr']
-                # TODO: Save quadruple ( i )
+                # Save point to retorn afect execution
+                self._saved_quadruple.append(i + 1)
+                # Goto addres of GOSUB
+                i = self._quadruples[i]['result']['addr']
+                continue
                 pass
 
-            elif self._quadruples[i]['operator'] == 'ENPROC':
-                # TODO: Retorn to quadruple saved ( i )
-                print(self._saved_quadruple)
-                # i = self._saved_quadruple
-                pass
+            elif self._quadruples[i]['operator'] == 'ENDPROC':
+                # Return to las position of execution
+                i = self._saved_quadruple.pop()
+                continue
 
             elif self._quadruples[i]['operator'] == 'RETURN':
 
@@ -396,10 +400,14 @@ class BigMachine:
                 result = self._quadruples[i]['result']
 
             elif self._quadruples[i]['operator'] == 'GETRET':
-                l_val = self._quadruples[i]['l_value']
-                r_val = self._quadruples[i]['r_value']
                 result = self._quadruples[i]['result']
+                if result is not None:
+                    temp = self.get_value(result['addr'])
+                    print("Return value ", temp)
+                    self._bigMemory.pop()
+                    print("POP Memory")
 
+                # Else return is empty
             elif self._quadruples[i]['operator'] == 'END':
                 endFlag = True
             # </editor-fold>
@@ -496,7 +504,7 @@ class BigMachine:
             # <editor-fold desc="PEN">
             elif self._quadruples[i]['operator'] == 'COLOR':
 
-                color = self.get_value(self._quadruples[i]['result']['addr'])
+                color = self.get_value(self._quadruples[i]['result']['addr']).strip()
 
                 if re.match(regex_color, color):
                     self._turtle.pencolor(color)
@@ -576,28 +584,11 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'SLEEP':
                 ms = self.get_value(self._quadruples[i]['result']['addr'])
                 print("...zzz")
+                print(ms)
                 time.sleep(float(ms))
             # </editor-fold>
 
-            # elif self._quadruples[i]['operator'] == 'AND':
-            #     l_val = self._quadruples[i]['l_value']['addr']
-            #     r_val = self._quadruples[i]['r_value']['addr']
-            #     result = self._quadruples[i]['result']['addr']
-            #
-            # elif self._quadruples[i]['operator'] == 'OR':
-            #     l_val = self._quadruples[i]['l_value']['addr']
-            #     r_val = self._quadruples[i]['r_value']['addr']
-            #     result = self._quadruples[i]['result']['addr']
-            #
-            # elif self._quadruples[i]['operator'] == 'NOT':
-            #     l_val = self._quadruples[i]['l_value']['addr']
-            #     r_val = self._quadruples[i]['r_value']['addr']
-            #     result = self._quadruples[i]['result']['addr']
-
             else:
-                # print(self._quadruples[i])
-                # print("Error self._quadruples[i] not found")
-                # sys.exit(0)
                 pass
             i += 1
 

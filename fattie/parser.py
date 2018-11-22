@@ -27,6 +27,7 @@ precedence = (
 # <editor-fold desc="Program">
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
+    chubby._end_main()
     p[0] = "COMPILED"
     # chubby.print_all()
     # chubby.print_quadruple()
@@ -75,7 +76,10 @@ def p_program_functions(p):
 # <editor-fold desc="Main">
 def p_main(p):
     '''main : MAIN ARROW NEW_LINE n_main block'''
-    chubby.end_main()
+    try:
+        chubby.fill_era_main()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 def p_n_main(p):

@@ -1,25 +1,19 @@
 fun fn1(Int : p1):Int =>
 		var Int : test
 		test = 1
-		print(1)
+		if test greater 1 =>
+				print("HOLA MUNDO")
+		else =>
+				print("ADIOS MUNDO")
 
 main =>
 		var Int : test11, test12, varTest
 		var Boolean : bol
+		startPosition(0,0)
 
+		color("#0000ff ")
 
-		test11 = 5
-		test12 = 12
-		while test12 greater test11 =>
-		    circle(360, test11)
-		    moveUp(70)
-		    print("Print while")
-		    test11 = test11 + 4
-		    print(test11)
-
-
-
-		sleep(2)
+		test11 = fn1(test12)
 
 
 

@@ -171,13 +171,23 @@ class Chubby:
     # <editor-fold desc="MAIN">
     # Generate GOTO MAIN
     def jump_main(self):
-        self._jump()
+        # self._jump()
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.ERA))
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.GOSUB))
+        self._quadruple.add(QuadruplePack(Operator.END))
+        # self._end_main()
+
+    def fill_era_main(self):
+        size_era = FluffyVariable(None, None, addr=address.calculate_era())
+        self._quadruple.fill(0, size_era)
 
     def jump_fill_main(self):
         self._fill()
 
-    def end_main(self):
-        self._quadruple.add(QuadruplePack(Operator.END, None, None))
+    def _end_main(self):
+        self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
     # </editor-fold>
 
@@ -200,7 +210,7 @@ class Chubby:
         self._jumps.append(self._quadruple.index)
 
     def make_goto_while(self):
-       self._jump(True)
+        self._jump(True)
 
     # </editor-fold>
 
