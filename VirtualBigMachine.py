@@ -345,10 +345,9 @@ class BigMachine:
                         for key in param:
                             self.insert(key, param[key])
 
-                self._settable_memory = []
+                self._settable_memory = None
 
                 continue
-                pass
 
             elif self._quadruples[i]['operator'] == 'ENDPROC':
                 # Return to las position of execution
