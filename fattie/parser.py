@@ -27,6 +27,7 @@ precedence = (
 # <editor-fold desc="Program">
 def p_program(p):
     '''program : empty_spaces n_goto_main program_vars n_program_vars program_functions main '''
+    chubby._end_main()
     p[0] = "COMPILED"
     # chubby.print_all()
     # chubby.print_quadruple()
@@ -75,7 +76,10 @@ def p_program_functions(p):
 # <editor-fold desc="Main">
 def p_main(p):
     '''main : MAIN ARROW NEW_LINE n_main block'''
-    chubby.end_main()
+    try:
+        chubby.fill_era_main()
+    except BigError as e:
+        e.print(p.lineno(0))
 
 
 def p_n_main(p):
@@ -130,7 +134,6 @@ def p_params(p):
         chubby.function_validate_params((p[1] is not None))
     except BigError as e:
         e.print(p.lineno(-1))
-
 
 # </editor-fold>
 
@@ -203,11 +206,20 @@ def p_sub_block_statement(p):
 
 
 def p_while(p):
-    '''while : WHILE expression n_while ARROW NEW_LINE block_statement'''
+    '''while : WHILE n_while_push expression n_while ARROW NEW_LINE block_statement'''
     try:
-        chubby.fill_jumps_while()
+        chubby.fill_jumps_while(line=1)
+        chubby.make_goto_while()
     except BigError as e:
         e.print(p.lineno(1))
+
+
+def p_n_while_push(p):
+    '''n_while_push : '''
+    try:
+        chubby.push_jump_while()
+    except BigError as e:
+        e.print(p.lineno(-1))
 
 
 def p_n_while(p):
@@ -265,7 +277,7 @@ def p_var_matrix(p):
 def p_n_array_2(p):
     '''n_array_2 : '''
     try:
-        chubby.push_dim(actual_var, 1)
+        chubby.push_dim(actual_var.parse(), 1)
     except BigError as e:
         e.print(p.lineno(-1))
 
@@ -342,7 +354,7 @@ def p_comparison(p):
     if p[1] is not None:
         try:
             chubby.add_operator(chubby.text_to_operator(p[1]))
-            chubby.check_operator_stack([Operator.LESS, Operator.GETRET, Operator.EQUALS, Operator.NOTEQUAL])
+            chubby.check_operator_stack([Operator.LESS, Operator.GREATER, Operator.EQUALS, Operator.NOTEQUAL])
         except BigError as e:
             e.print(p.lineno(1))
 
@@ -400,6 +412,7 @@ def p_unary(p):
              | empty'''
 
     if p[1] is not None:
+        print("MINIUS")
         chubby.add_operator(Operator.UMINUS)
 
 

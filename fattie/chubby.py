@@ -48,6 +48,7 @@ class Chubby:
 
         self._era = []
         self.active_function = ActiveFunction()
+        self.active_function_call = None
         self._count_params = 0
 
         self._array_op = []
@@ -171,13 +172,23 @@ class Chubby:
     # <editor-fold desc="MAIN">
     # Generate GOTO MAIN
     def jump_main(self):
-        self._jump()
+        # self._jump()
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.ERA))
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.GOSUB))
+        self._quadruple.add(QuadruplePack(Operator.END))
+        # self._end_main()
+
+    def fill_era_main(self):
+        size_era = FluffyVariable(None, None, addr=address.calculate_era())
+        self._quadruple.fill(0, size_era)
 
     def jump_fill_main(self):
         self._fill()
 
-    def end_main(self):
-        self._quadruple.add(QuadruplePack(Operator.END, None, None))
+    def _end_main(self):
+        self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
     # </editor-fold>
 
@@ -193,8 +204,14 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="WHILE condition">
-    def fill_jumps_while(self):
-        self._fill()
+    def fill_jumps_while(self, line=0):
+        self._fill(line)
+
+    def push_jump_while(self):
+        self._jumps.append(self._quadruple.index)
+
+    def make_goto_while(self):
+        self._jump(True)
 
     # </editor-fold>
 
@@ -268,8 +285,16 @@ class Chubby:
             raise BigError.mismatch_params(
                 "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
         param = FluffyVariable(None, None, addr=self._count_params)
-        self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
+        self._quadruple.add(QuadruplePack(Operator.PARAM, argument, None, param))
         self._count_params += 1
+
+    def find_function_call(self, _id):
+        self.active_function_call = self.find_function(_id)
+
+        if self.active_function_call is None:
+            raise BigError.undefined_function("The function {} is not declared".format(_id))
+
+        self._count_params = 0
 
     # </editor-fold>
 
@@ -287,7 +312,6 @@ class Chubby:
         """
             Push the dimension to the dimension stack
         """
-
         if dim == 0:
             self._dim_stack.append(var.array)
         else:
@@ -307,7 +331,7 @@ class Chubby:
         if exp is not None:
 
             dimS = FluffyVariable(None, Types.INT, addr=dim.size)
-            dimM = FluffyVariable(None, Types.INT, addr=dim.m)
+            dimM = self.add_constants(dim.m, Types.INT)
             tem = FluffyVariable(None, exp.type_var, addr=address.set_addr(exp.type_var))
             #  Validate dim and generate VER
             self._quadruple.add(QuadruplePack(Operator.VER, exp, 0, dimS))
@@ -332,12 +356,14 @@ class Chubby:
                 _ = self._dim_stack.pop()
                 op = self._operand.pop()
                 op2 = self._operand.pop()
-                temp = FluffyVariable(None, None, addr=address.set_addr(op.type_var))
+                addr = address.set_addr(op.type_var)
+                temp = FluffyVariable(None, op.type_var, addr=addr)
                 q = QuadruplePack(Operator.PLUS, op, op2, temp)
                 self._quadruple.add(q)
                 self._operand.append(temp)
 
-        base = FluffyVariable(None, dim.var.type_var, addr=dim.var.addr)
+        base_add_var = self.add_constants(dim.var.addr, dim.var.type_var)
+        base = FluffyVariable(None, dim.var.type_var, addr=base_add_var.addr)
         dim = self._operand.pop()
         # Mark access to variables as an indirect
         temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT), access=Access.Indirect)
@@ -366,9 +392,15 @@ class Chubby:
         # Generate GotoFalse, return to fill the address
         self._quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
 
-    def _jump(self):
-        self._jumps.append(self._quadruple.index)
-        self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
+    def _jump(self, stack=False):
+
+        if stack:
+            jump = self._jumps.pop()
+            addr = FluffyVariable(None, None, addr=jump)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, result=addr))
+        else:
+            self._jumps.append(self._quadruple.index)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
 
     # Fill jumps
     def _fill(self, line=0):

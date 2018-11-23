@@ -21,7 +21,7 @@ class Builder:
 
     def put(self, name, value):
         if name not in self._params:
-            raise AttributeError("Wrong values for the function")  # Change raise Error
+            raise AttributeError("Wrong values for the function")
         self._attrs[name] = value
         return self
 
@@ -33,3 +33,6 @@ class Builder:
 
     def clear(self):
         self._attrs.clear()
+
+
+

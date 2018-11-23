@@ -31,8 +31,9 @@ def _eat(data, easter=False):
 
         if easter: print(easter_egg)
 
-        #big_machine = BigMachine("fat.txt")
-        #big_machine.process_quadruple()
+
+        # big_machine = BigMachine("fat.txt")
+        # big_machine.process_quadruples()
 
     else:
         pass

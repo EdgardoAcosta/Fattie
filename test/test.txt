@@ -1,8 +1,20 @@
+fun fn1(Int : p1, Int : p2):Int =>
+		var Int : test
+		test = p2 * p2
+		print(test)
+
+		return test
+
 main =>
 		var Int : test11, test12, varTest
+		var Boolean : bol
+		startPosition(0,0)
 
-		test11 = 12
-		test12 = 2
-		varTest = test12 / test11
+		color("#0000ff ")
+		test12 = 12
 
-		print(varTest)
+		test11 = fn1(test12, test12)
+		print(test11)
+
+
+
