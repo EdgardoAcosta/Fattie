@@ -4,6 +4,7 @@ import re
 import turtle
 import time
 from fattie.belly.fluffyvariable import local_addr, global_addr
+from fattie.belly.exceptions import BigError
 from fattie.belly.types import Types
 
 regex_int = '^[0-9]+$'
@@ -20,7 +21,7 @@ class FatMemory:
 
     def __init__(self, _int=0, _float=0, _char=0, _boo=0):
         self.fat_memory = {
-            1: [None] * _int ,
+            1: [None] * _int,
             2: [None] * _float,
             3: [None] * _char,
             4: [None] * _boo
@@ -59,7 +60,7 @@ class BigMachine:
         self._memorySizes = list()
 
         # Retorn to quadruple
-        self._saved_quadruple = [0]
+        self._saved_quadruple = []
 
         self._return_values = []
 
@@ -114,8 +115,6 @@ class BigMachine:
             position = (addr - 1000000) % 100000
             self._fatGlobalMemory[self._check_type_global(addr)][position] = value
         else:
-            print("add {} - type {} - value {}".format(addr % 100000, self._check_type_local(addr), value))
-            print(  self._bigMemory[-1].fat_memory)
             self._bigMemory[-1].fat_memory[self._check_type_local(addr)][addr % 100000] = value
 
     def get_value(self, position, reference='Direct'):
@@ -128,6 +127,10 @@ class BigMachine:
             return result
         else:
             return self._bigMemory[-1].fat_memory[self._check_type_global(position)][position % 100000]
+
+    @staticmethod
+    def parse(quadruple):
+        return quadruple['l_value'], quadruple['r_value'], quadruple['result']
 
     @staticmethod
     def _fibonacci(n):
@@ -170,22 +173,25 @@ class BigMachine:
 
     # </editor-fold>
 
-    def process_quadruples(self):
-        i = 0
-        endFlag = False
-        while not endFlag:
-            print("i -> ", i)
-
+    def get_consts(self):
+        for quadruple in self._quadruples:
             # assignation of constants
-            if self._quadruples[i]['operator'] == 'CONST':
-                l_val = self._quadruples[i]['l_value']['addr']
-                result = self._quadruples[i]['result']['addr']
+            if quadruple['operator'] == 'CONST':
+                l_val = quadruple['l_value']['addr']
+                result = quadruple['result']['addr']
 
                 result = result - 500000
                 self._heavyConstants[result] = l_val
 
+    def process_quadruples(self):
+        i = 0
+        endFlag = False
+        self.get_consts()
+        while not endFlag:
+            # print("i -> ", i)
+
             # assignation of any variable
-            elif self._quadruples[i]['operator'] == 'EQUAL':
+            if self._quadruples[i]['operator'] == 'EQUAL':
                 l_val = self._quadruples[i]['l_value']['addr']
                 result = self._quadruples[i]['result']['addr']
 
@@ -201,7 +207,6 @@ class BigMachine:
 
             # add of two variables
             elif self._quadruples[i]['operator'] == 'PLUS':
-
                 l_val = self._quadruples[i]['l_value']['addr']
                 r_val = self._quadruples[i]['r_value']['addr']
                 result = self._quadruples[i]['result']['addr']
@@ -277,6 +282,8 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'LESS':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
                 r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
+                print(self._bigMemory[-1].fat_memory)
+
                 result = self._quadruples[i]['result']  # ['addr']
 
                 self.insert(result['addr'], (l_val < r_val))
@@ -319,10 +326,8 @@ class BigMachine:
 
             elif self._quadruples[i]['operator'] == 'GOTOF':
                 expression = self.get_value(self._quadruples[i]['l_value']['addr'])
-
-                if not expression:
-                    i = self._quadruples[i]['result']['addr']
-                    continue
+                i = self._quadruples[i]['result']['addr']
+                continue
             # </editor-fold>
 
             # <editor-fold desc="Function">
@@ -333,7 +338,7 @@ class BigMachine:
                 i = self._quadruples[i]['result']['addr']
                 memory = self._settable_memory
                 # TODO: Fix this
-                self._bigMemory.append(FatMemory(memory['INT'] + 1, memory['FLOAT'], memory['CHAR'], memory['BOOLEAN']))
+                self._bigMemory.append(FatMemory(memory['INT'], memory['FLOAT'], memory['CHAR'], memory['BOOLEAN']))
                 if len(self._params) > 0:
                     for param in self._params:
                         for key in param:
@@ -354,6 +359,8 @@ class BigMachine:
                 value = self.get_value(self._quadruples[i]['l_value']['addr'])
                 self._return_values.append(value)
                 result = self._quadruples[i]['result']['addr']
+                i = self._saved_quadruple.pop()
+                continue
 
                 pass
 
@@ -362,10 +369,15 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'PARAM':
                 value = self.get_value(self._quadruples[i]['l_value']['addr'])
 
+                if value is None:
+                    print("Tha variable {} don't have a value ".format(self._quadruples[i]['l_value']['id_var']))
+                    sys.exit(0)
+
                 self._params.append({self._quadruples[i]['result']['addr']: value})
 
             elif self._quadruples[i]['operator'] == 'GETRET':
                 result = self._quadruples[i]['result']['addr']
+                print(self._return_values)
                 self._bigMemory.pop()
                 self.insert(result, self._return_values.pop())
 

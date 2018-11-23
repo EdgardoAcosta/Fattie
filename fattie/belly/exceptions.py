@@ -75,4 +75,10 @@ class BigError(SyntaxError):
         err.err_name = 'Invali type in expression'
         return err
 
+    @staticmethod
+    def invalid_value(msg):
+        err = BigError(msg)
+        err.err_name = 'Invali value'
+        return err
+
 

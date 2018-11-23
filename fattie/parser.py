@@ -492,7 +492,7 @@ def p_function(p):
     chubby.function_end()
 
     # Release var table for function (n_point =  7)
-    # chubby.print_local_variables()
+    chubby.print_local_variables()
     chubby.clean_variables_from_function()
     chubby.reset_addr()
 
