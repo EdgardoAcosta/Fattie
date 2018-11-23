@@ -282,8 +282,6 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'LESS':
                 l_val = self.get_value(self._quadruples[i]['l_value']['addr'])
                 r_val = self.get_value(self._quadruples[i]['r_value']['addr'])
-                print(self._bigMemory[-1].fat_memory)
-
                 result = self._quadruples[i]['result']  # ['addr']
 
                 self.insert(result['addr'], (l_val < r_val))
@@ -326,8 +324,11 @@ class BigMachine:
 
             elif self._quadruples[i]['operator'] == 'GOTOF':
                 expression = self.get_value(self._quadruples[i]['l_value']['addr'])
-                i = self._quadruples[i]['result']['addr']
-                continue
+                if expression:
+                    pass
+                else:
+                    i = self._quadruples[i]['result']['addr']
+                    continue
             # </editor-fold>
 
             # <editor-fold desc="Function">
@@ -377,7 +378,6 @@ class BigMachine:
 
             elif self._quadruples[i]['operator'] == 'GETRET':
                 result = self._quadruples[i]['result']['addr']
-                print(self._return_values)
                 self._bigMemory.pop()
                 self.insert(result, self._return_values.pop())
 

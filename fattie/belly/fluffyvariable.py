@@ -45,7 +45,6 @@ class AddressLocation:
 
     def calculate_era(self):
         result = {}
-        print("-------------------\n")
         for e in self.local_address:
             result[e.name] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
                                                                                               local_addr[e] + 1
