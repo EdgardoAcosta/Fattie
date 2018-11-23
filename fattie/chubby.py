@@ -136,7 +136,6 @@ class Chubby:
 
         if check_types:
             val_result = address.set_addr(check_types)
-
             result = FluffyVariable(None, type_var=check_types, addr=val_result)
             # Generate Quadruple
             quadruple = QuadruplePack(oper, l_operand, r_operand, result)
@@ -261,6 +260,7 @@ class Chubby:
 
     def function_create_era(self):
         size_era = FluffyVariable(None, None, addr=address.calculate_era())
+
         self._quadruple.add(QuadruplePack(Operator.ERA, None, None, size_era))
 
     def function_validate_params(self, empty_params=False):
