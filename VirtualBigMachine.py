@@ -50,7 +50,7 @@ class BigMachine:
         # definition of the globalmemory for variables
         # Global memory slots for ints 0 - 100000,floats 100000 - 200000,chars 200000 - 300000, bools 300000 - 400000,
         # const 500000 - 600000
-        self._fatGlobalMemory = []
+        self._fatGlobalMemory = 20 * [None]
 
         # definition of the memory for the constants
         # it stores the constants values
@@ -88,7 +88,7 @@ class BigMachine:
             while line:
                 self._quadruples.append(ast.literal_eval(line))
                 line = fp.readline()
-                count += 1
+            count += 1
         # </editor-fold>
 
     # <editor-fold desc="Set, get">
@@ -112,21 +112,31 @@ class BigMachine:
 
     def insert(self, addr, value):
         if addr / 1000000 >= 1:
-            position = (addr - 1000000) % 100000
-            self._fatGlobalMemory[self._check_type_global(addr)][position] = value
+            position = (addr - 1000000)
+            # addr = addr - 1000000
+
+            self._fatGlobalMemory[position] = value
         else:
             self._bigMemory[-1].fat_memory[self._check_type_local(addr)][addr % 100000] = value
 
-    def get_value(self, position, reference='Direct'):
-
+    def get_value(self, position, referenced=False):
         if position >= 1000000:
-            return self._fatGlobalMemory[self._check_type_global(position - 1000000)][position]
+            position = (position - 1000000)
+            value = self._fatGlobalMemory[position]
         elif position >= 500000:
             position = position - 500000
             result = self._heavyConstants[position]
-            return result
+            value = result
         else:
-            return self._bigMemory[-1].fat_memory[self._check_type_global(position)][position % 100000]
+            value = self._bigMemory[-1].fat_memory[self._check_type_global(position)][position % 100000]
+
+        if referenced:
+            return self.get_value(self.get_value(value + 1))
+
+        return value
+
+    def _access_type(self, quadruple):
+        return quadruple['access'] == 'Indirect'
 
     @staticmethod
     def parse(quadruple):
@@ -174,36 +184,47 @@ class BigMachine:
     # </editor-fold>
 
     def get_consts(self):
-        for quadruple in self._quadruples:
+        for i in range(1,len(self._quadruples )):
             # assignation of constants
-            if quadruple['operator'] == 'CONST':
-                l_val = quadruple['l_value']['addr']
-                result = quadruple['result']['addr']
-
+            if self._quadruples[i]['operator'] == 'CONST':
+                l_val = self._quadruples[i]['l_value']['addr']
+                result = self._quadruples[i]['result']['addr']
                 result = result - 500000
                 self._heavyConstants[result] = l_val
 
     def process_quadruples(self):
+
+        # print(self._quadruples[0])
         i = 0
         endFlag = False
         self.get_consts()
         while not endFlag:
             # print("i -> ", i)
-
             # assignation of any variable
             if self._quadruples[i]['operator'] == 'EQUAL':
                 l_val = self._quadruples[i]['l_value']['addr']
                 result = self._quadruples[i]['result']['addr']
 
-                # check if the l_val is a constant
-                if self._check_for_constant_direction(l_val):
-                    value = self._get_value_heavy_constants(l_val)
-                else:
-                    # verify if l_val is a global or local direction
-                    value = self.get_value(l_val)
+                if self._quadruples[i]['result']['access'] == "Indirect":
+                    value = l_val
+                elif self._quadruples[i]['l_value']['access'] == "Indirect":
+                    # print("equals ", self._quadruples[i]['l_value'])
+                    # print("self ",self.get_value(l_val))
+                    # print("big ",self._bigMemory[-1].fat_memory)
+                    pass
 
-                # verify if is going to assign to a global variable
+                else:
+
+                    # check if the l_val is a constant
+                    if self._check_for_constant_direction(l_val):
+                        value = self._get_value_heavy_constants(l_val)
+                    else:
+                        # verify if l_val is a global or local direction
+                        value = self.get_value(l_val)
+
+                    # verify if is going to assign to a global variable
                 self.insert(result, value)
+
 
             # add of two variables
             elif self._quadruples[i]['operator'] == 'PLUS':
@@ -211,11 +232,23 @@ class BigMachine:
                 r_val = self._quadruples[i]['r_value']['addr']
                 result = self._quadruples[i]['result']['addr']
 
+                if self._quadruples[i]['result']['access'] == 'Indirect':
+
+                    # print("----------------")
+                    # print(self._quadruples[i]['result'])
+                    # print("PRINT MEM ", self._bigMemory[-1].fat_memory)
+                    # print("get value ", self.get_value(9))
+                    # print("\n")
+                    # print("///////////////////////////////////")
+                    #
+                    # print("result", self.get_value(result))
+                    pass
+
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val)
+                l_operand = self.get_value(l_val, self._access_type(self._quadruples[i]['l_value']))
 
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val)
+                r_operand = self.get_value(r_val, self._access_type(self._quadruples[i]['r_value']))
 
                 # verify if si going to assign to a global variable
                 evaluation = l_operand + r_operand
@@ -231,10 +264,10 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val)
+                l_operand = self.get_value(l_val, self._access_type(self._quadruples[i]['l_value']))
 
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val)
+                r_operand = self.get_value(r_val, self._access_type(self._quadruples[i]['r_value']))
 
                 # verify if si going to assign to a global variable
                 evaluation = l_operand - r_operand
@@ -248,15 +281,15 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val)
+                l_operand = self.get_value(l_val, self._access_type(self._quadruples[i]['l_value']))
+
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val)
+                r_operand = self.get_value(r_val, self._access_type(self._quadruples[i]['r_value']))
 
                 # verify if si going to assign to a global variable
                 evaluation = l_operand * r_operand
 
                 self.insert(result, evaluation)
-
 
             # divide two variables
             elif self._quadruples[i]['operator'] == 'DIVIDE':
@@ -264,12 +297,13 @@ class BigMachine:
                 l_val = self._quadruples[i]['l_value']['addr']
                 r_val = self._quadruples[i]['r_value']['addr']
                 result = self._quadruples[i]['result']['addr']
+                access = self._quadruples[i]['result']['access'] == 'Indirect'
 
                 # verify if is going to subtract l_val from a global variable
-                l_operand = self.get_value(l_val)
+                l_operand = self.get_value(l_val, self._access_type(self._quadruples[i]['l_value']))
 
                 # verify if is going to stract r_val from a global variable
-                r_operand = self.get_value(r_val)
+                r_operand = self.get_value(r_val, self._access_type(self._quadruples[i]['r_value']))
 
                 # verify if si going to assign to a global variable
 
@@ -385,14 +419,17 @@ class BigMachine:
                 endFlag = True
             # </editor-fold>
 
+            # <editor-fold desc="ARRAYS">
             elif self._quadruples[i]['operator'] == 'VER':
                 exp = self.get_value(self._quadruples[i]['l_value']['addr'])
-                dim = int(self._quadruples[i]['result']['addr'])
+                dim = int(self._quadruples[i]['result']['addr']) - 1
                 if 0 <= exp <= dim:
                     pass
                 else:
                     print("The dimensions of the array dont match")
                     sys.exit(0)
+
+            # </editor-fold>
 
             # <editor-fold desc="IO">
 
@@ -443,7 +480,12 @@ class BigMachine:
 
             # Show value in terminal
             elif self._quadruples[i]['operator'] == 'PRINT':
-                aux = self.get_value(self._quadruples[i]['result']['addr'])
+
+                # print("PRINT1 ", self._quadruples[i]['result'])
+
+
+                aux = self.get_value(self._quadruples[i]['result']['addr'],
+                                     self._access_type(self._quadruples[i]['result']))
 
                 print("-> {} ".format(aux))
             # </editor-fold>

@@ -13,25 +13,6 @@ cube.insert_values()
 address = AddressLocation()
 
 
-class Switch:
-
-    def __init__(self, option):
-        self.option = option
-        self.cases = {}
-
-    def __call__(self, option, fn):
-        self.cases[option] = fn
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cases[self.option]()
-
-        # with Switch(1) as case:
-        #     case(1, lambda: print("one"))
-
-
 class Chubby:
     # Constructor of class
     def __init__(self, debug=False):
@@ -477,6 +458,7 @@ class Chubby:
 
     def make_output(self):
         file = open("fat.txt", "w")
+        # file.write("{'INT': 19, 'FLOAT': 10, 'CHAR': 10, 'BOOLEAN': 10} \n")
         self._quadruple.write_to_file(file)
 
     # </editor-fold>
