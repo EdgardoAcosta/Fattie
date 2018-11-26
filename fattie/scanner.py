@@ -16,15 +16,13 @@ reserved = {
     "moveDown": "MOVEDOWN",
     "moveRight": "MOVERIGHT",
     "moveLeft": "MOVELEFT",
-    "angle": "ANGLE",
     "color": "COLOR",
     "circle": "CIRCLE",
     "square": "SQUARE",
     "clean": "CLEAN",
     "draw": "DRAW",
     "startPosition": "STARTPOSITION",
-    "screenSizesX": "SCREENSIZESX",
-    "screenSizesY": "SCREENSIZESY",
+    "screenSizes": "SCREENSIZES",
     "go": "GO",
     "fibonacci": "FIBONACCI",
     "factorial": "FACTORIAL",
@@ -37,8 +35,8 @@ reserved = {
     "Int": "INT",
     "Float": "FLOAT",
     "Char": "CHAR",
-    # "True": "TRUE",
-    # "False": "FALSE",
+    "True": "TRUE",
+    "False": "FALSE",
 
     "equals": "EQUALS",
     "less": "LESS",
@@ -70,20 +68,33 @@ t_ARROW = r'\=\>'
 t_ignore = ' '
 
 
-def t_COMMENT(t):
-    r'\$.*([\s]*)?\n*'
+def t_comment(t):
+    r'\$.*'
+
     t.lexer.lineno += 1
 
 
 def t_ignore_multi_comment(t):
-    r'\$\*(.|\n)*\*\$?'
+    r'\$\*(.|\n)*\*\$'
     pass
 
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
-    # print(t.type + t.value)
+
+    if t.type == 'TRUE':
+        t.value = True
+    elif t.type == 'FALSE':
+        t.value = False
+
+    return t
+
+
+# Define a float number
+def t_CTEF(t):
+    r'[0-9]+\.[0-9]+'
+    t.value = float(t.value)
     return t
 
 
@@ -94,17 +105,9 @@ def t_CTEI(t):
     return t
 
 
-# Define a float number
-def t_CTEF(t):
-    r'[0-9]*\.[0-9]+|[0-9]+'
-    t.value = float(t.value)
-    return t
-
-
-# Todo: Check rexe for char
 # Define a variable Chart
 def t_CTEC(t):
-    r'\".*\"$'
+    r'\".*\"'
     t.value = t.value[1:-1]
     return t
 

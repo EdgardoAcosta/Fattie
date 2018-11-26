@@ -8,6 +8,7 @@ class BigError(SyntaxError):
 
     def print(self, lineno):
         print('{} at line -> {} <-: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
+        sys.exit(0)
 
     @staticmethod
     def undefined_function(msg):
@@ -62,3 +63,23 @@ class BigError(SyntaxError):
         err = BigError(msg)
         err.err_name = 'Invalid operator'
         return err
+
+    @staticmethod
+    def invalid_array(msg):
+        err = BigError(msg)
+        err.err_name = 'Variable is not Array type'
+        return err
+
+    @staticmethod
+    def invalid_type(msg):
+        err = BigError(msg)
+        err.err_name = 'Invali type in expression'
+        return err
+
+    @staticmethod
+    def invalid_value(msg):
+        err = BigError(msg)
+        err.err_name = 'Invali value'
+        return err
+
+

@@ -3,29 +3,32 @@
 # IntelliJ project files
 .idea/*
 out
+*.txt
 
 # Phyton
 *.out
+*.txt
 fattie/*.pyc
 
 # PLY
 fattie/parsetab.py
-
 # pyenv
 .python-version
 
 # Environments
 .env
 .venv
-env/
 venv/*
 ENV/
 env.bak/
 
 # Test files
-test/*
+test/
+*.ft
 
 # Pycache
-fattie/__pycache__/
+fattie/belly/__pycached__/
+fattie/__pycached__/
+__pycache__/*
 fattie/core/__pycache__/
-fattie/belly/__pycache__/
+fattie/__pycache__/

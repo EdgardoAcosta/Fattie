@@ -130,9 +130,8 @@ class Cube:
         self.set_cube(SpecialFunction.STARTPOSITION, Types.INT, Types.INT, None)
         self.set_cube(SpecialFunction.STARTPOSITION, Types.FLOAT, Types.FLOAT, None)
         # ScreenSizeX
-        self.set_cube(SpecialFunction.SCREENSIZESX, Types.INT, None, Types.INT)
-        # ScreenSizeY
-        self.set_cube(SpecialFunction.SCREENSIZESY, Types.INT, None, Types.INT)
+        self.set_cube(SpecialFunction.SCREENSIZES, Types.INT, None, Types.INT)
+
         # GO change of position with out painting
         self.set_cube(SpecialFunction.GO, Types.INT, None, None)
         # Fibonacci

@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+import sys
 from fattie.cube import Cube
 from fattie.belly.types import Types
-from fattie.belly.quadruple import Operator
 from fattie.belly.exceptions import BigError
-from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
+from fattie.belly.quadruple import Operator, SpecialFunction
 from fattie.belly.heavyfunction import HeavyFunction, ActiveFunction
-from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation
+from fattie.belly.fluffyvariable import FluffyVariable, AddressLocation, Access
+from fattie.belly.quadruple import QuadruplePack, QuadrupleStack, match_operators
 
 cube = Cube()
 cube.insert_values()
@@ -13,7 +15,7 @@ address = AddressLocation()
 
 class Chubby:
     # Constructor of class
-    def __init__(self):
+    def __init__(self, debug=False):
         self._global_variable = {}
         self._local_variable = {}
         self._functions = {}
@@ -27,9 +29,16 @@ class Chubby:
 
         self._era = []
         self.active_function = ActiveFunction()
+        self.active_function_call = None
         self._count_params = 0
 
+        self._array_op = []
+        self._dim_stack = []
+        self._dimension = 0
+
         self._next_const_addr = 500000
+
+        sys.tracebacklimit = debug
 
     # <editor-fold desc="Variable and Function tables">
     def add_global_variable(self, instance):
@@ -55,7 +64,7 @@ class Chubby:
         elif id_var in self._global_variable:
             return self._global_variable.get(id_var)
         else:
-            raise BigError.undefined_variable('{}'.format(id_var))
+            raise BigError.undefined_variable('The variable {} doest exist'.format(id_var))
 
     def clean_variables_from_function(self):
         self._local_variable.clear()
@@ -108,8 +117,7 @@ class Chubby:
 
         if check_types:
             val_result = address.set_addr(check_types)
-
-            result = FluffyVariable(None, check_types, val_result)
+            result = FluffyVariable(None, type_var=check_types, addr=val_result)
             # Generate Quadruple
             quadruple = QuadruplePack(oper, l_operand, r_operand, result)
             # Push _quadruple to list
@@ -117,6 +125,7 @@ class Chubby:
 
             # Add result position of _quadruple to the operand list
             self._operand.append(result)
+
 
         else:
             raise BigError.mismatch_operator("{} {} {} ".format(l_type.name, oper.name, r_type.name))
@@ -143,13 +152,23 @@ class Chubby:
     # <editor-fold desc="MAIN">
     # Generate GOTO MAIN
     def jump_main(self):
-        self._jump()
+        # self._jump()
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.ERA))
+        self._jumps.append(self._quadruple.index)
+        self._quadruple.add(QuadruplePack(Operator.GOSUB))
+        self._quadruple.add(QuadruplePack(Operator.END))
+        # self._end_main()
+
+    def fill_era_main(self):
+        size_era = FluffyVariable(None, None, addr=address.calculate_era())
+        self._quadruple.fill(0, size_era)
 
     def jump_fill_main(self):
         self._fill()
 
-    def end_main(self):
-        self._quadruple.add(QuadruplePack(Operator.END, None, None))
+    def _end_main(self):
+        self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
     # </editor-fold>
 
@@ -165,8 +184,14 @@ class Chubby:
     # </editor-fold>
 
     # <editor-fold desc="WHILE condition">
-    def fill_jumps_while(self):
-        self._fill()
+    def fill_jumps_while(self, line=0):
+        self._fill(line)
+
+    def push_jump_while(self):
+        self._jumps.append(self._quadruple.index)
+
+    def make_goto_while(self):
+        self._jump(True)
 
     # </editor-fold>
 
@@ -200,7 +225,7 @@ class Chubby:
         check_data = cube.compare_types(Operator.RETURN, return_value.type_var, self.active_function.return_type)
 
         if check_data:
-            result = FluffyVariable(None, self.active_function.return_type,
+            result = FluffyVariable(None, type_var=self.active_function.return_type,
                                     addr=address.set_addr(kind=self.active_function.return_type))
 
             quadruple = QuadruplePack(Operator.RETURN, l_value=return_value, r_value=None, result=result)
@@ -215,7 +240,8 @@ class Chubby:
         self._quadruple.add(QuadruplePack(Operator.ENDPROC, None, None))
 
     def function_create_era(self):
-        size_era = FluffyVariable(None, None, address.calculate_era())
+        size_era = FluffyVariable(None, None, addr=address.calculate_era())
+
         self._quadruple.add(QuadruplePack(Operator.ERA, None, None, size_era))
 
     def function_validate_params(self, empty_params=False):
@@ -239,9 +265,98 @@ class Chubby:
         if argument.type_var != fun.params[self._count_params].type_var:
             raise BigError.mismatch_params(
                 "The parameter {} doesn't  match the type of parameter in function".format(self._count_params))
-        param = FluffyVariable(None, None, self._count_params)
-        self._quadruple.add(QuadruplePack(Operator.PARAM, fun.params[self._count_params], None, param))
+        param = FluffyVariable(None, None, addr=self._count_params)
+        self._quadruple.add(QuadruplePack(Operator.PARAM, argument, None, param))
         self._count_params += 1
+
+    def find_function_call(self, _id):
+        self.active_function_call = self.find_function(_id)
+
+        if self.active_function_call is None:
+            raise BigError.undefined_function("The function {} is not declared".format(_id))
+
+        self._count_params = 0
+
+    # </editor-fold>
+
+    # <editor-fold desc="Arrays">
+    def _top_dim(self):
+        """
+            Check top of the dimension stack, if empty `Return` None,
+             else `Return` the dimension of type Dimension
+        """
+        if len(self._dim_stack) == 0:
+            return None
+        return self._dim_stack[-1]
+
+    def push_dim(self, var, dim):
+        """
+            Push the dimension to the dimension stack
+        """
+        if dim == 0:
+            self._dim_stack.append(var.array)
+        else:
+            d = self._top_dim()
+            self._dim_stack.append(d.next)
+
+    def eval_dim(self):
+        """
+              Function to evaluate the expression for each dimension.
+
+              Generates the quadruple of VER (Verification of dimension) and the multiplication of the expression times
+              the m value
+        """
+        exp = self._operand.pop()
+        dim = self._top_dim()
+        if exp.type_var != Types.INT:
+            raise BigError.invalid_value("The value of the array {}  is not an Integer".format(exp.id_var))
+
+        if exp is not None:
+
+            dimS = FluffyVariable(None, Types.INT, addr=dim.size)
+            dimM = self.add_constants(dim.m, Types.INT)  # m dim
+            self._operand.pop()
+            dimInf = self.add_constants(0, Types.INT)  # Dimension inferior
+            self._operand.pop()
+            tem = FluffyVariable(None, exp.type_var, addr=address.set_addr(exp.type_var))
+            #  Validate dim and generate VER
+            self._quadruple.add(QuadruplePack(Operator.VER, exp, dimInf, dimS))
+            self._quadruple.add(QuadruplePack(Operator.TIMES, exp, dimM, tem))  # x m
+            self._operand.append(tem)
+        else:
+            raise BigError("Error in array expression")
+
+    def eval_array(self):
+        """
+            Function to evaluate the array for each dimension.
+
+            Generates the quadruples for the sum of each dimension, and generates the quadruple for sum of the BASE
+
+        """
+
+        dim = self._dim_stack.pop()
+
+        if self._top_dim() is not None:
+
+            while (self._top_dim().var == dim.var) if self._top_dim() is not None else False:
+                _ = self._dim_stack.pop()
+                op = self._operand.pop()
+                op2 = self._operand.pop()
+                addr = address.set_addr(op.type_var)
+                temp = FluffyVariable(None, op.type_var, addr=addr)
+                q = QuadruplePack(Operator.PLUS, op, op2, temp)
+                self._quadruple.add(q)
+                self._operand.append(temp)
+
+        # (Index + k ) + BASE
+        base_add_var = self.add_constants(dim.var.addr, dim.var.type_var)
+        self._operand.pop()
+        base = FluffyVariable(None, dim.var.type_var, addr=base_add_var.addr)
+        dim = self._operand.pop()
+        temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT), access=Access.Indirect)
+
+        self._quadruple.add(QuadruplePack(Operator.PLUS, base, dim, temp))
+        self._operand.append(temp)
 
     # </editor-fold>
 
@@ -264,12 +379,19 @@ class Chubby:
         # Generate GotoFalse, return to fill the address
         self._quadruple.add(QuadruplePack(Operator.GOTOF, result, None, None))
 
-    def _jump(self):
-        self._jumps.append(self._quadruple.index)
-        self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
+    def _jump(self, stack=False):
+
+        if stack:
+            jump = self._jumps.pop()
+            addr = FluffyVariable(None, None, addr=jump)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, result=addr))
+        else:
+            self._jumps.append(self._quadruple.index)
+            self._quadruple.add(QuadruplePack(Operator.GOTO, None, None))
 
     # Fill jumps
     def _fill(self, line=0):
+
         actual_quadruple = self._jumps.pop()
         if actual_quadruple is None:
             raise BigError("Error, pending quadruples")
@@ -281,12 +403,12 @@ class Chubby:
     # Make GOSUB
     def gosub(self):
         self._era.append(self._quadruple.index)
-        function_dir = FluffyVariable(None, None, self.active_function.start_position)
+        function_dir = FluffyVariable(None, None, addr=self.active_function.start_position)
         self._quadruple.add(QuadruplePack(Operator.GOSUB, None, None, function_dir))
 
         if self.active_function.return_type is not None:
             temp = FluffyVariable(None, self.active_function.return_type
-                                  , address.set_addr(self.active_function.return_type))
+                                  , addr=address.set_addr(self.active_function.return_type))
             self._operand.append(temp)
             self._quadruple.add(QuadruplePack(Operator.GETRET, None, None, temp))
 
@@ -297,14 +419,19 @@ class Chubby:
         if value not in self._constants:
             self._constants[value] = self._next_const_addr
             self._next_const_addr += 1
-            const = FluffyVariable(None, type_var=var_type, addr=self._constants[value])
-            quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, value), r_value=None,
+            const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
+            quadruple = QuadruplePack(operation=Operator.CONST, l_value=FluffyVariable(None, None, addr=value),
+                                      r_value=None,
                                       result=const)
 
             self.add_operand(const)
             self._quadruple.add(quadruple)
 
-        return self._constants[value]
+        else:
+            const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
+            self.add_operand(const)
+
+        return const
 
     # </editor-fold>
 
@@ -322,17 +449,152 @@ class Chubby:
         raise BigError("Operator {} is not a valid one".format(op))
 
     @staticmethod
+    def text_to_special_operator(op):
+        for e in list(SpecialFunction):
+            if op.upper() == e.name:
+                return e
+        raise BigError("Operator {} is not a valid one".format(op))
+
+    @staticmethod
     def text_to_type(tp):
         for t in list(Types):
             if tp.upper() == t.name:
                 return t
         raise BigError("Type {} is not a valid one".format(tp))
 
+    def make_output(self):
+        file = open("fat.txt", "w")
+        # file.write("{'INT': 19, 'FLOAT': 10, 'CHAR': 10, 'BOOLEAN': 10} \n")
+        self._quadruple.write_to_file(file)
+
     # </editor-fold>
 
-    def make_output(self):
-        file = open("fat.ft", "w")
-        self._quadruple.write_to_file(file)
+    # <editor-fold desc="Special Functions">
+    def make_special_function(self, action_name, expected_type=None):
+        """
+        Generic function for crating almost all special function
+        :param action_name:
+        :param expected_type:
+        :return: None, Insert quadruple in stack
+        """
+        action_name = self.text_to_special_operator(action_name)
+        exp = self._operand.pop()
+
+        if exp is None:
+            raise BigError("Error getting value for function")
+
+        if expected_type is not None:
+            if exp.type_var not in expected_type:
+                print(action_name)
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(action_name.name,
+                                                                             [item.name for item in expected_type]))
+
+        q = QuadruplePack(action_name, None, None, exp)
+        self._quadruple.add(q)
+
+    def make_special_function_clean(self):
+        """
+        Make quadruple to clean screen
+
+        :return: None, Insert quadruple in stack
+        """
+        self._quadruple.add(QuadruplePack(SpecialFunction.CLEAN))
+
+    def make_special_function_square(self, expected_type=None):
+        """
+        Make quadruple for square, accept 1, 2 parameters
+        :param expected_type:
+        :return:
+        """
+        p1 = self._operand.pop()
+        p2 = self._operand.pop()
+
+        if expected_type is not None:
+            if p1.type_var not in expected_type or p2.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.SQUARE, None, p1, p2))
+
+    def make_special_function_start_point(self, expected_type=None):
+        """
+        Make quadruple for start point, define the starting point of the pencil
+        :param expected_type:
+        :return:
+        """
+        x = self._operand.pop()
+        y = self._operand.pop()
+
+        if expected_type is not None:
+            if x.type_var not in expected_type or y.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.STARTPOSITION, None, x, y))
+
+    def make_special_function_screen_size(self, expected_type=None):
+        """
+        Make quadruple for start screen size (x and y), define the starting point of the pencil
+        :param sizes:
+        :return:
+        """
+
+        exp1 = self._operand.pop()
+        exp2 = self._operand.pop()
+
+        if expected_type is not None:
+            if exp1.type_var not in expected_type or exp2.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.SCREENSIZES, result=exp1))
+        self._quadruple.add(QuadruplePack(SpecialFunction.SCREENSIZES, result=exp2))
+
+    def make_special_function_go(self, expected_type=None):
+        """
+        Make quadruple to move to an x,y position
+        :param expected_type:
+        :return:
+        """
+        x = self._operand.pop()
+        y = self._operand.pop()
+
+        if expected_type is not None:
+            if x.type_var not in expected_type or y.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.GO, None, x, y))
+
+    def make_special_function_circle(self, expected_type=None):
+
+        radius = self._operand.pop()
+        angle = self._operand.pop()
+
+        if expected_type is not None:
+            if radius.type_var not in expected_type or angle.type_var not in expected_type:
+                raise BigError.invalid_type(
+                    "Function {} only accepts expression of type {} ".format(SpecialFunction.STARTPOSITION.name,
+                                                                             [item.name for item in expected_type]))
+
+        self._quadruple.add(QuadruplePack(SpecialFunction.CIRCLE, None, radius, angle))
+
+        pass
+
+    def make_special_function_input(self):
+
+        exp = self._operand.pop()
+
+        if exp is None:
+            raise BigError("No given value to save input")
+        self._quadruple.add(QuadruplePack(SpecialFunction.INPUT, result=exp))
+
+    # </editor-fold>
 
     # <editor-fold desc="Prints for test">
 
