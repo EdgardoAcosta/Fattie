@@ -308,15 +308,20 @@ class Chubby:
         """
         exp = self._operand.pop()
         dim = self._top_dim()
+        if exp.type_var != Types.INT:
+            raise BigError.invalid_value("The value of the array {}  is not an Integer".format(exp.id_var))
 
         if exp is not None:
 
             dimS = FluffyVariable(None, Types.INT, addr=dim.size)
-            dimM = self.add_constants(dim.m, Types.INT)
+            dimM = self.add_constants(dim.m, Types.INT)  # m dim
+            self._operand.pop()
+            dimInf = self.add_constants(0, Types.INT)  # Dimension inferior
+            self._operand.pop()
             tem = FluffyVariable(None, exp.type_var, addr=address.set_addr(exp.type_var))
             #  Validate dim and generate VER
-            self._quadruple.add(QuadruplePack(Operator.VER, exp, 0, dimS))
-            self._quadruple.add(QuadruplePack(Operator.TIMES, dimM, exp, tem))
+            self._quadruple.add(QuadruplePack(Operator.VER, exp, dimInf, dimS))
+            self._quadruple.add(QuadruplePack(Operator.TIMES, exp, dimM, tem))  # x m
             self._operand.append(tem)
         else:
             raise BigError("Error in array expression")
@@ -343,10 +348,11 @@ class Chubby:
                 self._quadruple.add(q)
                 self._operand.append(temp)
 
+        # (Index + k ) + BASE
         base_add_var = self.add_constants(dim.var.addr, dim.var.type_var)
+        self._operand.pop()
         base = FluffyVariable(None, dim.var.type_var, addr=base_add_var.addr)
         dim = self._operand.pop()
-        # Mark access to variables as an indirect
         temp = FluffyVariable(None, Types.INT, addr=address.set_addr(Types.INT), access=Access.Indirect)
 
         self._quadruple.add(QuadruplePack(Operator.PLUS, base, dim, temp))

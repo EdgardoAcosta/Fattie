@@ -247,8 +247,10 @@ def p_var_array(p):
     '''var_array : OPEN_BRACKET n_array expression n_eval_dim CLOSE_BRACKET var_matrix
                  | empty'''
     if p[1] is not None:
+        global actual_var
         try:
             chubby.eval_array()
+            # actual_var = None
         except BigError as e:
             e.print(p.lineno(0))
 
@@ -277,7 +279,7 @@ def p_var_matrix(p):
 def p_n_array_2(p):
     '''n_array_2 : '''
     try:
-        chubby.push_dim(actual_var.parse(), 1)
+        chubby.push_dim(actual_var, 1)
     except BigError as e:
         e.print(p.lineno(-1))
 
@@ -449,7 +451,6 @@ def p_save_type(p):
 def p_more_variables(p):
     '''more_variables : more_variables COMMA variable_type
                       | empty'''
-
     if len(p) > 2:
         var_builder.put('id_var', p[3])
         var = var_builder.build()
@@ -458,13 +459,11 @@ def p_more_variables(p):
 
 def p_array(p):
     '''array : ID OPEN_BRACKET ctei CLOSE_BRACKET matrix'''
-
-    # Set dim table for arrays and matrices
+    # Set   table for arrays and matrices
     dim2 = p[5]
     size = (p[3] + 1) * (dim2.size if dim2 is not None else 1)
     m1 = size // (p[3] + 1)
     dim1 = Dimension((p[3] + 1), m1)
-
     if dim2 is not None:
         dim2.m = m1 // dim2.size
         dim1.next = dim2

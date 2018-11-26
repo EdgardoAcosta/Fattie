@@ -1,5 +1,6 @@
 from enum import Enum
 from fattie.belly.types import Types
+from fattie.belly.exceptions import BigError
 
 local_addr = {
     Types.INT: 000000,
@@ -49,7 +50,7 @@ class AddressLocation:
             result[e.name] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
                                                                                               local_addr[e] + 1
             #  Because the array start on 0 it has to add 1 to all different of zero
-            result[e.name] +=10  #(result[e.name] + 10) if result[e.name] != 0 else result[e.name]
+            result[e.name] += 10  # (result[e.name] + 10) if result[e.name] != 0 else result[e.name]
         return result
 
     def reset_addr(self):
@@ -59,9 +60,7 @@ class AddressLocation:
 class Access(Enum):
     Direct = 1
     Indirect = 2
-
-
-from fattie.belly.exceptions import BigError
+    Test = 3
 
 
 # Class to check if a variable exist on the variable table and add new variable if not exit to table

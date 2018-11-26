@@ -8,6 +8,7 @@ class BigError(SyntaxError):
 
     def print(self, lineno):
         print('{} at line -> {} <-: {}'.format(self.err_name, lineno, self.msg), file=sys.stderr)
+        sys.exit(0)
 
     @staticmethod
     def undefined_function(msg):
