@@ -46,10 +46,18 @@ class AddressLocation:
     def calculate_era(self):
         result = {}
         for e in self.local_address:
-            result[e.name] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
-                                                                                              local_addr[e] + 1
-            #  Because the array start on 0 it has to add 1 to all different of zero
-            result[e.name] +=10  #(result[e.name] + 10) if result[e.name] != 0 else result[e.name]
+
+
+            #result[e.name] = self.local_address[e] % local_addr[e] if local_addr[e] != 0 else self.local_address[e] - \
+            #                                                                                  local_addr[e] + 1
+            if local_addr[e] != 0:
+                result[e.name] = self.local_address[e] % local_addr[e]
+            else:
+                result[e.name] = self.local_address[e]
+
+            #  Because the array start on 0 it has to add 1 to all different of zero)
+            result[e.name] += 10
+
         return result
 
     def reset_addr(self):

@@ -418,13 +418,12 @@ class Chubby:
         self._era.append(self._quadruple.index)
         function_dir = FluffyVariable(None, None, addr=self.active_function.start_position)
         self._quadruple.add(QuadruplePack(Operator.GOSUB, None, None, function_dir))
-
         if self.active_function.return_type is not None:
             temp = FluffyVariable(None, self.active_function.return_type
                                   , addr=address.set_addr(self.active_function.return_type))
             self._operand.append(temp)
             self._quadruple.add(QuadruplePack(Operator.GETRET, None, None, temp))
-
+        self.active_function =  ActiveFunction()
     # </editor-fold>
 
     # <editor-fold desc="Constants">
@@ -443,7 +442,6 @@ class Chubby:
         else:
             const = FluffyVariable("CONST-" + str(value), type_var=var_type, addr=self._constants[value])
             self.add_operand(const)
-
         return const
 
     # </editor-fold>

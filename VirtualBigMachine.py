@@ -55,11 +55,12 @@ class BigMachine:
         # definition of the memory for the constants
         # it stores the constants values
         self._heavyConstants = 600000 * [None]
+
         # definition of the virtualmemory
         # this memory save the memory requirements for functions
         self._memorySizes = list()
 
-        # Retorn to quadruple
+        # Return to quadruple
         self._saved_quadruple = []
 
         self._return_values = []
@@ -188,7 +189,7 @@ class BigMachine:
         endFlag = False
         self.get_consts()
         while not endFlag:
-            # print("i -> ", i)
+            #print("i -> ", i)
 
             # assignation of any variable
             if self._quadruples[i]['operator'] == 'EQUAL':
@@ -349,6 +350,7 @@ class BigMachine:
 
             elif self._quadruples[i]['operator'] == 'ENDPROC':
                 # Return to las position of execution
+
                 i = self._saved_quadruple.pop()
                 continue
 
@@ -356,9 +358,9 @@ class BigMachine:
 
                 value = self.get_value(self._quadruples[i]['l_value']['addr'])
                 self._return_values.append(value)
-                result = self._quadruples[i]['result']['addr']
-                i = self._saved_quadruple.pop()
-                continue
+                # result = self._quadruples[i]['result']['addr']
+                # i = self._saved_quadruple.pop()
+                #continue
 
                 pass
 

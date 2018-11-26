@@ -797,13 +797,13 @@ def p_ctec(p):
 
 def p_true(p):
     '''true : TRUE'''
-    chubby.add_constants(p[1], Types.BOOLEAN)
+    chubby.add_constants(str(p[1]), Types.BOOLEAN)
     p[0] = p[1]
 
 
 def p_false(p):
     '''false : FALSE'''
-    chubby.add_constants(p[1], Types.BOOLEAN)
+    chubby.add_constants(str(p[1]), Types.BOOLEAN)
     p[0] = p[1]
 
 
