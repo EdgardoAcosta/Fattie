@@ -131,9 +131,7 @@ class BigMachine:
         if position >= 1000000:
 
             position = (position - 1000000)
-            print(position)
             value = self._fatGlobalMemory[position]
-            print("GLOB ", self._fatGlobalMemory[0:10])
         elif position >= 500000:
             position = position - 500000
             result = self._heavyConstants[position]
@@ -227,10 +225,10 @@ class BigMachine:
                 result = self._quadruples[i]['result']['addr']
 
                 if self._quadruples[i]['result']['access'] == "Indirect":
-                    # TODO: Change 1 to INT, FLOAT
-                    result = self._bigMemory[-1].fat_memory[1][self._quadruples[i]['result']['addr']]
+                    result = self._bigMemory[-1].fat_memory[self._check_type_local(self._quadruples[i]['result']['type_var'])][self._quadruples[i]['result']['addr']]
                     value = l_val
-
+                    if value < 500000:
+                        value = self._bigMemory[-1].fat_memory[self._check_type_local(self._quadruples[i]['result']['type_var'])][value]
 
                 else:
                     # check if the l_val is a constant
@@ -257,16 +255,11 @@ class BigMachine:
                 # verify if is going to stract r_val from a global variable
                 r_operand = self.get_value(r_val, self._access_type(self._quadruples[i]['r_value']))
 
-                print("{} |{}| - {} |{}| ".format(l_val, self._quadruples[i]['l_value']['access'], r_val,
-                                                  self._quadruples[i]['r_value']['access']))
-                print("\n", self._bigMemory[-1].fat_memory[1])
-
                 # verify if si going to assign to a global variable
                 evaluation = l_operand + r_operand
 
                 self.insert(result, evaluation)
 
-                # TODO: Checar el UMINUS PORQUE NO SABES QUE PEDO
 
             # subtract of two variables
             elif self._quadruples[i]['operator'] == 'MINUS':
@@ -494,8 +487,6 @@ class BigMachine:
             # Show value in terminal
             elif self._quadruples[i]['operator'] == 'PRINT':
 
-                print(self._bigMemory[-1].fat_memory[1])
-                print(self._access_type(self._quadruples[i]['result']))
                 aux = self.get_value(self._quadruples[i]['result']['addr'],
                                      self._access_type(self._quadruples[i]['result']))
 
