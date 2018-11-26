@@ -601,7 +601,6 @@ class BigMachine:
             elif self._quadruples[i]['operator'] == 'SLEEP':
                 ms = self.get_value(self._quadruples[i]['result']['addr'])
                 print("...zzz")
-                print(ms)
                 time.sleep(float(ms))
             # </editor-fold>
 

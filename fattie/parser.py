@@ -717,7 +717,6 @@ def p_expression_go(p):
     try:
         if isinstance(p[1], int):
             var = chubby.add_constants(p[1], Types.INT)
-            print(var)
         else:
             var = chubby.find_variable(p[1])
         chubby.add_operand(var)
@@ -796,13 +795,13 @@ def p_ctec(p):
 
 def p_true(p):
     '''true : TRUE'''
-    chubby.add_constants(p[1], Types.BOOLEAN)
+    chubby.add_constants(str(p[1]), Types.BOOLEAN)
     p[0] = p[1]
 
 
 def p_false(p):
     '''false : FALSE'''
-    chubby.add_constants(p[1], Types.BOOLEAN)
+    chubby.add_constants(str(p[1]), Types.BOOLEAN)
     p[0] = p[1]
 
 
